@@ -1374,22 +1374,37 @@ $updateAnnouncement = $stmt->fetch(PDO::FETCH_ASSOC);
             xhr.send(formData);
         });
     
-        //20241217更新：添加图片和视频的查看功能
-        // 将 viewFile 绑定到 window 对象，确保全局可访问
-        window.viewFile = function(fileId) {
-            //console.log(`查看文件ID: ${fileId}`);
-            window.open(`view_file.php?id=${fileId}`, '_blank');
-        };
+    //20241217更新：添加图片和视频的查看功能
+    // 将 viewFile 绑定到 window 对象，确保全局可访问
+    window.viewFile = function(fileId) {
+        //console.log(`查看文件ID: ${fileId}`);
+        window.open(`view_file.php?id=${fileId}`, '_blank');
+    };
     
-        // 加载文件列表
-        function loadFileList() {
+    // 加载文件列表
+    function loadFileList() {
     fetch('file_list.php', {
-        method: 'GET',
-        credentials: 'include' // 确保请求包含会话信息
+    method: 'GET',
+    credentials: 'include' // 确保请求包含会话信息
     })
     .then(response => response.json())
     .then(data => {
-        fileListTable.innerHTML = '';
+    fileListTable.innerHTML = '';
+        if (!Array.isArray(data) || data.length === 0) {
+            fileListTable.innerHTML = `
+                <tr>
+                    <td colspan="6" class="text-center text-muted py-4">
+                        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                            <img src="static/tutuxiao.png" alt="暂无文件" style="width: 80px; opacity: 0.7; margin-bottom: 12px;">
+                            <div style="font-size: 1.2rem; color: #888;">
+                                暂无文件，快来上传你的第一个文件吧！
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            `;
+            return;
+        }
         data.forEach(file => {
             // 判断是否为图片或视频类型，添加查看按钮
             const viewButton = (file.type && (file.type.startsWith('image/') || file.type.startsWith('video/'))) ?

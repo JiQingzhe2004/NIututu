@@ -37,17 +37,6 @@ CREATE TABLE `Messages` (
   `timestamp` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 表的结构 `Schedules`
-
-CREATE TABLE `Schedules` (
-  `id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
-  `patient_name` varchar(255) NOT NULL,
-  `doctor_name` varchar(255) NOT NULL,
-  `date` date NOT NULL,
-  `time` time NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
 -- 表的结构 `users`
 
 CREATE TABLE `users` (
@@ -80,12 +69,6 @@ ALTER TABLE `Messages`
   ADD KEY `sender_id` (`sender_id`),
   ADD KEY `receiver_id` (`receiver_id`);
 
--- 表的索引 `Schedules`
-
-ALTER TABLE `Schedules`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `user_id` (`user_id`);
-
 -- 表的索引 `users`
 
 ALTER TABLE `users`
@@ -106,10 +89,6 @@ ALTER TABLE `files`
 
 ALTER TABLE `Messages`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
-
---
-ALTER TABLE `Schedules`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 -- 使用表AUTO_INCREMENT `users`
 

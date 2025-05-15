@@ -1040,23 +1040,29 @@ $updateAnnouncement = $stmt->fetch(PDO::FETCH_ASSOC);
             const showPhoto = document.getElementById('showPhoto');
             const lightbox = document.getElementById('lightbox');
             const closeBtn = document.querySelector('.lightbox .close');
-
+        
             // 显示灯箱
-            showPhoto.addEventListener('click', () => {
-                lightbox.style.display = 'block';
-            });
-
+            if (showPhoto) {
+                showPhoto.addEventListener('click', () => {
+                    lightbox.style.display = 'block';
+                });
+            }
+        
             // 关闭灯箱
-            closeBtn.addEventListener('click', () => {
-                lightbox.style.display = 'none';
-            });
-
-            // 点击灯箱背景关闭
-            lightbox.addEventListener('click', (e) => {
-                if (e.target === lightbox) {
+            if (closeBtn) {
+                closeBtn.addEventListener('click', () => {
                     lightbox.style.display = 'none';
-                }
-            });
+                });
+            }
+        
+            // 点击灯箱背景关闭
+            if (lightbox) {
+                lightbox.addEventListener('click', (e) => {
+                    if (e.target === lightbox) {
+                        lightbox.style.display = 'none';
+                    }
+                });
+            }
         });
                 // 修改 showLightbox 函数，添加关闭事件监听
                 function showLightbox(imageSrc) {

@@ -5,3 +5,4 @@ error_log.txt
 *.log
 uploads/
 debug_log.txt
+.env

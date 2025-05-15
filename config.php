@@ -1,6 +1,12 @@
 <?php
 // config.php
 
+require_once __DIR__ . '/vendor/autoload.php'; // 引入 Composer 自动加载
+
+// 加载 .env 文件
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+$dotenv->load();
+
 ini_set('display_errors', 0);
 ini_set('log_errors', 1);
 ini_set('error_log', __DIR__ . '/error.log');
@@ -16,28 +22,15 @@ session_start([
     'sid_bits_per_character' => 6,     // 增加会话 ID 的复杂度
 ]);
 
-// 读取配置文件路径
-$configFile = __DIR__ . '/config.json';
+// 只从 .env 读取数据库配置
+$host = $_ENV['DB_HOST'] ?? null;
+$database = $_ENV['DB_DATABASE'] ?? null;
+$db_user = $_ENV['DB_USERNAME'] ?? null;
+$db_password = $_ENV['DB_PASSWORD'] ?? null;
 
-// 检查配置文件是否存在
-if (!file_exists($configFile)) {
-    die('配置文件不存在。');
+if (!$host || !$database || !$db_user || !$db_password) {
+    die('数据库配置不完整，请检查 .env 文件。');
 }
-
-// 读取并解析配置文件
-$config = json_decode(file_get_contents($configFile), true);
-
-// 检查数据库配置是否存在
-if (!isset($config['db'])) {
-    die('数据库配置不存在。');
-}
-
-$dbConfig = $config['db'];
-
-$host = $dbConfig['host'];
-$database = $dbConfig['database'];
-$db_user = $dbConfig['username'];       // 重命名变量
-$db_password = $dbConfig['password'];   // 重命名变量
 
 $dsn = "mysql:host=$host;dbname=$database;charset=utf8mb4";
 $options = [
@@ -46,7 +39,7 @@ $options = [
 ];
 
 try {
-    $pdo = new PDO($dsn, $db_user, $db_password, $options); // 使用新变量名
+    $pdo = new PDO($dsn, $db_user, $db_password, $options);
 } catch (PDOException $e) {
     error_log('数据库连接失败: ' . $e->getMessage());
     die('数据库连接失败。');

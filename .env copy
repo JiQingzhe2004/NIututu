@@ -1,0 +1,4 @@
+DB_HOST=localhost
+DB_DATABASE=你的数据库名
+DB_USERNAME=你的用户名
+DB_PASSWORD=你的密码

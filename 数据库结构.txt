@@ -1,0 +1,62 @@
+announcements
+字段	类型	空	默认	注释
+id (主键)	int(11)	否		
+login_content	text	否		
+index_content	text	否		
+update_content	text	是	NULL	
+update_enabled	tinyint(1)	是	0	
+created_at	timestamp	是	CURRENT_TIMESTAMP	
+索引
+键名	类型	唯一	紧凑	字段	基数	排序规则	空	注释
+PRIMARY	BTREE	是	否	id	3	A	否	
+files
+字段	类型	空	默认	注释
+id (主键)	int(11)	否		
+user_id	int(11)	否		
+name	varchar(255)	否		
+original_name	varchar(255)	否		
+type	varchar(255)	否		
+size	bigint(20)	否		
+path	varchar(255)	否		
+upload_time	datetime	是	CURRENT_TIMESTAMP	
+access	enum('public', 'private')	否	private	
+索引
+键名	类型	唯一	紧凑	字段	基数	排序规则	空	注释
+PRIMARY	BTREE	是	否	id	6	A	否	
+user_id	BTREE	否	否	user_id	2	A	否	
+Messages
+字段	类型	空	默认	注释
+id (主键)	int(11)	否		
+sender_id	int(11)	否		
+receiver_id	int(11)	否		
+content	text	否		
+timestamp	datetime	否	CURRENT_TIMESTAMP	
+索引
+键名	类型	唯一	紧凑	字段	基数	排序规则	空	注释
+PRIMARY	BTREE	是	否	id	0	A	否	
+sender_id	BTREE	否	否	sender_id	0	A	否	
+receiver_id	BTREE	否	否	receiver_id	0	A	否	
+Schedules
+字段	类型	空	默认	注释
+id (主键)	int(11)	否		
+user_id	int(11)	否		
+patient_name	varchar(255)	否		
+doctor_name	varchar(255)	否		
+date	date	否		
+time	time	否		
+索引
+键名	类型	唯一	紧凑	字段	基数	排序规则	空	注释
+PRIMARY	BTREE	是	否	id	0	A	否	
+user_id	BTREE	否	否	user_id	0	A	否	
+users
+字段	类型	空	默认	注释
+id (主键)	int(11)	否		
+username	varchar(255)	否		
+name	varchar(255)	否		
+password	varchar(255)	否		
+created_at	timestamp	是	CURRENT_TIMESTAMP	
+role	enum('admin', 'user')	否	user	
+索引
+键名	类型	唯一	紧凑	字段	基数	排序规则	空	注释
+PRIMARY	BTREE	是	否	id	3	A	否	
+username	BTREE	是	否	username	3	A	否	

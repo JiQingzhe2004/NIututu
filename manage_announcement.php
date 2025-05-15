@@ -39,14 +39,6 @@ $announcement = $stmt->fetch(PDO::FETCH_ASSOC);
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <link href="favicon.ico" rel="icon">
-    <link rel="icon" type="image/png" href="/static/favicon-96x96.png" sizes="96x96" />
-    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
-    <link rel="shortcut icon" href="/static/favicon.ico" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png" />
-    <meta name="apple-mobile-web-app-title" content="牛图图传输" />
-    <link rel="manifest" href="/static/site.webmanifest" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>管理公告</title>
     <link href="css/bootstrap.min.css" rel="stylesheet">

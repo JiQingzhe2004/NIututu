@@ -57,27 +57,6 @@ $updateAnnouncement = $stmt->fetch(PDO::FETCH_ASSOC);
             --btn-primary-bg: #375a7f;
             --btn-primary-border: #375a7f;
         }
-        /* 美化滚动条 */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: var(--bg-color);
-            border-radius: 10px;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background-color: var(--text-color);
-            border-radius: 10px;
-            border: 2px solid var(--bg-color);
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background-color: #555;
-        }
-
 
         /* 文件预览区域样式 */
 
@@ -573,13 +552,14 @@ $updateAnnouncement = $stmt->fetch(PDO::FETCH_ASSOC);
             bottom: 20px;
             right: 20px;
             max-width: 90%; /* 最大宽度为视口宽度的90% */
-            background-color: rgba(var(--player-bg), 0.7);
+            background-color: rgba(var(--player-bg), 0.9);
             border-radius: 10px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
             z-index: 1000;
             backdrop-filter: blur(5px);
             color: var(--player-text);
             display: none;
+            padding: 10px; /* 添加内边距 */
         }
 
         .light-theme {
@@ -620,55 +600,6 @@ $updateAnnouncement = $stmt->fetch(PDO::FETCH_ASSOC);
             overflow: hidden;
             text-overflow: ellipsis;
         }
-
-        /* 进度条整体样式 */
-        #progress {
-            -webkit-appearance: none; /* 去除默认样式 */
-            appearance: none;
-            width: 100%;
-            height: 8px;
-            background: #e0e0e0; /* 未走过的部分颜色 */
-            border-radius: 4px;
-            outline: none;
-            opacity: 0.7;
-            transition: opacity 0.2s;
-        }
-
-        #progress:hover {
-            opacity: 1;
-        }
-
-        /* 进度条走过的部分样式 */
-        #progress::-webkit-slider-runnable-track {
-            height: 8px;
-            background: linear-gradient(to right, #007bff, #00aaff); /* 走过的部分颜色 */
-            border-radius: 4px;
-        }
-
-        #progress::-moz-range-track {
-            height: 8px;
-            background: linear-gradient(to right, #007bff, #00aaff); /* 走过的部分颜色 */
-            border-radius: 4px;
-        }
-
-        /* 进度条滑块样式 */
-        #progress::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 16px;
-            height: 16px;
-            background: #007bff; /* 滑块颜色 */
-            border-radius: 50%;
-            cursor: pointer;
-        }
-
-        #progress::-moz-range-thumb {
-            width: 16px;
-            height: 16px;
-            background: #007bff; /* 滑块颜色 */
-            border-radius: 50%;
-            cursor: pointer;
-        }
     </style>
 </head>
 <body>
@@ -678,12 +609,9 @@ $updateAnnouncement = $stmt->fetch(PDO::FETCH_ASSOC);
         <link rel="stylesheet" href="css/animate.min.css"/>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="关闭"></button>
     </div>
-    <div class="container py-2">
-        <div class="d-flex justify-content-center align-items-center mb-3">
-            <img src="static/tutu.png" alt="logo" class="me-3" style="width: 50px;">
-            <h1 class="text-center mb-0 d-none d-md-block" style="line-height: 50px;">牛图图内网传输</h1>
-        </div>
-        <hr>
+    <div class="container py-4">
+        <h1 class="text-center">内网文件管理系统</h1>
+
         <!-- 显示欢迎信息和退出按钮 -->
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div class="d-flex align-items-center">
@@ -827,16 +755,15 @@ $updateAnnouncement = $stmt->fetch(PDO::FETCH_ASSOC);
             <button class="btn-close" onclick="closeAudioPlayer()"></button>
         </div>
         <div class="player-body">
-            <div id="now-playing">未选择音频文件</div>
-            <audio id="audio-element" style="display: none;"></audio>
+            <div id="now-playing">未选择歌曲</div>
+            <audio id="audio-element" controls style="display:none;"></audio>
             <div class="controls">
-                <button id="play-pause-btn" class="btn btn-sm btn-primary" onclick="togglePlayPause()">播</button>
+                <button id="play-pause-btn" class="btn btn-sm btn-primary" onclick="togglePlayPause()">播放</button>
                 <input type="range" id="progress" value="0" class="form-range">
-                <span id="current-time">00:00</span>|
+                <span id="current-time">00:00</span> / 
                 <span id="duration">00:00</span>
             </div>
             <div class="volume-control">
-                <!-- 音量控制滑块 -->
                 <input type="range" id="volume" min="0" max="1" step="0.1" value="1" 
                     class="form-range" oninput="setVolume(this.value)">
             </div>
@@ -943,10 +870,10 @@ $updateAnnouncement = $stmt->fetch(PDO::FETCH_ASSOC);
             const btn = document.getElementById('play-pause-btn');
             if (currentAudio.paused) {
                 currentAudio.play();
-                btn.textContent = '停';
+                btn.textContent = '暂停';
             } else {
                 currentAudio.pause();
-                btn.textContent = '播';
+                btn.textContent = '播放';
             }
         }
 

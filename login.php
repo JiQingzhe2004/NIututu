@@ -208,6 +208,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <?php if (isset($error)) : ?>
                     <div class="alert alert-danger"><?php echo htmlspecialchars($error); ?></div>
                 <?php endif; ?>
+                
                 <form method="post">
                     <div class="mb-3">
                         <label for="username" class="form-label">用户名</label>
@@ -222,7 +223,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
             <!-- 版权信息 -->
             <div class="text-center">
-                <small>&copy; 2024-(<?php echo date("Y-m-d"); ?>) 吉庆喆.牛图图传输. 版权所有. <br> V 3.0版本.</small>
+                <small>&copy; 2024-(<?php echo date("Y-m-d"); ?>) 吉庆喆.文件管理系统. 版权所有. V 3.0版本.</small>
             </div>
         </div>
     </div>

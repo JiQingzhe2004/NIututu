@@ -112,7 +112,7 @@ function deleteFileAsUser($pdo, $fileId, $userId) {
                     // 提交事务
                     $pdo->commit();
 
-                    echo '删除成功，彻底没了！🎉';
+                    echo '文件已删除';
                     
                     // 添加日志记录
                     error_log("File ID $fileId deleted by User ID $userId");
@@ -120,15 +120,15 @@ function deleteFileAsUser($pdo, $fileId, $userId) {
                     // 回滚事务
                     $pdo->rollBack();
 
-                    echo '发生错误了，不知道啥错误！🤥';
+                    echo '删除文件时发生错误';
                     error_log("Error deleting file at path: $filePath by User ID $userId");
                 }
             } else {
-                echo '文件可能已经没了！🗿';
+                echo '文件不存在';
                 error_log("File not found at path: $filePath for File ID $fileId");
             }
         } else {
-            echo '这不是你的文件，不让删！🫡';
+            echo '文件不存在或无权限删除';
             error_log("File ID $fileId not found or User ID $userId lacks permission");
         }
     } catch (PDOException $e) {
@@ -137,7 +137,7 @@ function deleteFileAsUser($pdo, $fileId, $userId) {
             $pdo->rollBack();
         }
 
-        echo '删除过程中发生数据库错误！🤯';
+        echo '删除过程中发生数据库错误';
         error_log("Database error while deleting file ID $fileId: " . $e->getMessage());
     }
 }

@@ -33,7 +33,6 @@ $mimeTypeMapping = [
     'image' => 'image',
     'video' => 'video',
     'audio' => 'audio',
-    'audio/mpeg' => 'audio',
     'application/pdf' => 'document',
     'application/msword' => 'document',
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => 'document',
@@ -42,8 +41,6 @@ $mimeTypeMapping = [
     'application/zip' => 'archive',
     'application/x-rar-compressed' => 'archive',
     'text/plain' => 'text',
-    'text/markdown' => 'text', // 新增：支持 Markdown 文件
-    'application/octet-stream' => 'binary', // 新增：处理通用二进制文件
     // 添加更多常见的 MIME 类型映射
 ];
 
@@ -71,6 +68,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['file'])) {
 
         $mimeType = $files['type'][$i];
         $filesize = intval($files['size'][$i]); // 确保是整数
+
+        // 获取自定义文件名
+        $customNames = isset($_POST['customName']) ? $_POST['customName'] : [];
+
+        // 添加调试日志
+        error_log("Custom Names: " . print_r($customNames, true), 3, 'debug_log.txt');
 
         // 获取访问权限，默认为 'private'
         $access = in_array($accesses, ['public', 'private']) ? $accesses : 'private';
@@ -116,21 +119,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['file'])) {
             continue;
         } else {
             if (move_uploaded_file($files['tmp_name'][$i], $filepath)) {
-                // 保留完整的 MIME 类型
-                $fileMimeType = $mimeType; // 例如 "image/png"
+                // 映射 MIME 类型到常见类别
+                $fileCategory = 'other'; // 默认类别
+                foreach ($mimeTypeMapping as $key => $value) {
+                    if (strpos($mimeType, $key) !== false) {
+                        $fileCategory = $value;
+                        break;
+                    }
+                }
 
                 // 生成上传时间（服务器时间）
                 $uploadTime = date('Y-m-d H:i:s');
 
-                // 插入文件信息到数据库
+                // 插入文件信息到数据库，使用 original_name 存储自定义名称
                 try {
-                    // 确保 $fileMimeType 不超过 255 个字符（根据数据库定义调整）
-                    $fileMimeType = substr($fileMimeType, 0, 255);
+                    // 确保 $fileCategory 不超过 50 个字符（根据数据库定义调整）
+                    $fileCategory = substr($fileCategory, 0, 50);
 
                     // 修改 SQL 语句，使用 original_name 存储自定义名称
                     $stmt = $pdo->prepare('INSERT INTO files (name, original_name, type, size, path, upload_time, user_id, access) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
                     // 传递参数
-                    $stmt->execute([$uniqueName, $customName, $fileMimeType, $filesize, $filepath, $uploadTime, $userId, $access]);
+                    $stmt->execute([$uniqueName, $customName, $fileCategory, $filesize, $filepath, $uploadTime, $userId, $access]);
                     $responses[] = ['success' => true];
                 } catch (PDOException $e) {
                     // 删除已上传的文件

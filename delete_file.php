@@ -128,7 +128,7 @@ function deleteFileAsUser($pdo, $fileId, $userId) {
                 error_log("File not found at path: $filePath for File ID $fileId");
             }
         } else {
-            echo '文件不存在或无权限删除';
+            echo '您无权限删除';
             error_log("File ID $fileId not found or User ID $userId lacks permission");
         }
     } catch (PDOException $e) {

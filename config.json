@@ -1,8 +1,8 @@
 {
     "db": {
         "host": "localhost",
-        "database": "",
-        "username": "",
-        "password": ""
+        "database": "wjcs",
+        "username": "root",
+        "password": "root"
     }
 }

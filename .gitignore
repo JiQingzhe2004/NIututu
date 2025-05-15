@@ -1,4 +1,7 @@
 phpEnv8.9.6-Setup.exe
 config.json
-error.log
 .DS_Store
+error_log.txt
+*.log
+uploads/
+debug_log.txt

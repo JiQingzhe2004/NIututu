@@ -51,6 +51,7 @@ try {
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
+    <link href="favicon.ico" rel="icon">
     <title>管理更新内容</title>
     <!-- 引入 Bootstrap CSS -->
     <link href="css/bootstrap.min.css" rel="stylesheet">

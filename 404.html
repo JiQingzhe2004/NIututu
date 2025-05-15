@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>页面未找到 - 牛图图</title>
+  <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
+  <style>
+    :root {
+      --primary-color: #387bff;
+      --primary-dark: #2563eb;
+      --text-color: #333;
+      --text-light: #666;
+      --bg-color: #f5f9ff;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --primary-color: #4b88fd;
+        --primary-dark: #3b78f0;
+        --text-color: #e1e7ef;
+        --text-light: #a0a8b7;
+        --bg-color: #0f172a;
+      }
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      display: flex;
+      min-height: 100vh;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .container {
+      max-width: 800px;
+      text-align: center;
+      position: relative;
+      z-index: 10;
+      padding: 30px;
+    }
+
+    .error-code {
+      font-size: 150px;
+      font-weight: 900;
+      color: var(--primary-color);
+      line-height: 1;
+      margin-bottom: 20px;
+      position: relative;
+      text-shadow: 2px 2px 20px rgba(56, 123, 255, 0.2);
+    }
+
+    .error-code::after {
+      content: "404";
+      position: absolute;
+      top: 5px;
+      left: 5px;
+      color: rgba(56, 123, 255, 0.2);
+      z-index: -1;
+    }
+
+    .message {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      color: var(--text-color);
+    }
+
+    .description {
+      font-size: 18px;
+      color: var(--text-light);
+      line-height: 1.6;
+      margin-bottom: 40px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .home-button {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: inline-block;
+      box-shadow: 0 4px 12px rgba(56, 123, 255, 0.3);
+      outline:none
+    }
+
+    .home-button:hover {
+      background-color: var(--primary-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(56, 123, 255, 0.4);
+    }
+
+    .life-grid {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      opacity: 0.1;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .life-cell {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background-color: var(--primary-color);
+      animation: float 20s infinite ease-in-out;
+    }
+
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(0) translateX(0) rotate(0deg);
+        opacity: 0.3;
+      }
+      25% {
+        transform: translateY(-30px) translateX(20px) rotate(90deg);
+        opacity: 0.8;
+      }
+      50% {
+        transform: translateY(20px) translateX(-20px) rotate(180deg);
+        opacity: 0.5;
+      }
+      75% {
+        transform: translateY(30px) translateX(20px) rotate(270deg);
+        opacity: 0.7;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .error-code {
+        font-size: 100px;
+      }
+      
+      .message {
+        font-size: 20px;
+      }
+      
+      .description {
+        font-size: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="life-grid" id="lifeGrid"></div>
+
+  <div class="container">
+    <div class="error-code">404</div>
+    <div class="message">这个页面还未被创造</div>
+    <div class="description">
+      您尝试访问的页面可能不存在或已被移动。
+      就像人生中的某些路径，有时我们需要重新规划方向。
+    </div>
+    <a href="/" class="home-button">返回人生起点</a>
+  </div>
+
+  <script>
+    // 创建浮动的生命格子背景
+    const lifeGrid = document.getElementById('lifeGrid');
+    const cellCount = window.innerWidth > 768 ? 50 : 25; // 根据屏幕大小调整数量
+    
+    for (let i = 0; i < cellCount; i++) {
+      const cell = document.createElement('div');
+      cell.className = 'life-cell';
+      
+      // 随机位置
+      const x = Math.random() * 100;
+      const y = Math.random() * 100;
+      
+      cell.style.left = `${x}%`;
+      cell.style.top = `${y}%`;
+      
+      // 随机大小
+      const size = 4 + Math.random() * 8;
+      cell.style.width = `${size}px`;
+      cell.style.height = `${size}px`;
+      
+      // 随机动画延迟
+      cell.style.animationDelay = `${Math.random() * 10}s`;
+      
+      lifeGrid.appendChild(cell);
+    }
+
+    // 检测是否为暗黑模式
+    function detectColorScheme() {
+      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark-mode');
+      } else {
+        document.body.classList.remove('dark-mode');
+      }
+    }
+    
+    // 初始检测
+    detectColorScheme();
+    
+    // 监听系统主题变化
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', detectColorScheme);
+  </script>
+</body>
+</html>

@@ -49,7 +49,9 @@ if (isset($_GET['id'])) {
             // 设置响应头
             header('Content-Type: ' . $mimeType);
             header('Content-Disposition: inline; filename="' . $originalName . '"');
-            header('Cache-Control: max-age=3600'); // 缓存 1 小时
+            header('Cache-Control: no-cache, no-store, must-revalidate'); // 禁用缓存
+            header('Pragma: no-cache');
+            header('Expires: 0');
             header('Accept-Ranges: bytes');
 
             // 清除输出缓冲区，避免乱码

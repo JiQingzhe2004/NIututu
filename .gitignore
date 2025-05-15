@@ -1,2 +1,4 @@
 phpEnv8.9.6-Setup.exe
-.gitignore
+config.json
+error.log
+.DS_Store

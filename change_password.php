@@ -10,23 +10,6 @@ require 'check_login.php';
 // 包含数据库连接配置
 require 'config.php';
 
-// 数据库连接
-$config = json_decode(file_get_contents('config.json'), true);
-$dbConfig = $config['db'];
-
-$dsn = "mysql:host={$dbConfig['host']};dbname={$dbConfig['database']};charset=utf8mb4";
-$options = [
-    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-    PDO::ATTR_EMULATE_PREPARES => false,
-];
-
-try {
-    $pdo = new PDO($dsn, $dbConfig['username'], $dbConfig['password'], $options);
-} catch (PDOException $e) {
-    die("数据库连接失败: " . $e->getMessage());
-}
-
 $message = '';
 $messageType = '';
 

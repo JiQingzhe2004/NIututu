@@ -817,7 +817,7 @@ $updateAnnouncement = $stmt->fetch(PDO::FETCH_ASSOC);
         </div>
         <!-- 版权信息 -->
         <div class="text-center mt-3">
-            <small>&copy; 2024-(<?php echo date("Y-m-d"); ?>) 吉庆喆.牛图图传输. 版权所有. <br> V 3.0版本.</small>
+            <small>&copy; 2024-(<?php echo date("Y-m-d"); ?>) 吉庆喆.牛图图传输. 版权所有. <br> V 3.5.6版本.</small>
         </div>
     </div>
     <!-- 悬浮音频播放器 -->
@@ -1397,7 +1397,7 @@ $updateAnnouncement = $stmt->fetch(PDO::FETCH_ASSOC);
                         <div style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
                             <img src="static/tutuxiao.png" alt="暂无文件" style="width: 80px; opacity: 0.7; margin-bottom: 12px;">
                             <div style="font-size: 1.2rem; color: #888;">
-                                暂无文件，快来上传你的第一个文件吧！
+                                暂无文件，快来上传文件吧！
                             </div>
                         </div>
                     </td>

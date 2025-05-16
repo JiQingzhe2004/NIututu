@@ -223,7 +223,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
             <!-- 版权信息 -->
             <div class="text-center">
-                <small>&copy; 2024-(<?php echo date("Y-m-d"); ?>) 吉庆喆.文件管理系统. 版权所有. V 3.5.6版本.</small>
+                <small>&copy; 2024-(<?php echo date("Y-m-d"); ?>) 吉庆喆.文件管理系统. 版权所有. V 3.5.7版本.</small>
             </div>
         </div>
     </div>

@@ -817,7 +817,7 @@ $updateAnnouncement = $stmt->fetch(PDO::FETCH_ASSOC);
         </div>
         <!-- 版权信息 -->
         <div class="text-center mt-3">
-            <small>&copy; 2024-(<?php echo date("Y-m-d"); ?>) 吉庆喆.牛图图传输. 版权所有. <br> V 3.5.6版本.</small>
+            <small>&copy; 2024-(<?php echo date("Y-m-d"); ?>) 吉庆喆.牛图图传输. 版权所有. <br> V 3.5.7版本.</small>
         </div>
     </div>
     <!-- 悬浮音频播放器 -->

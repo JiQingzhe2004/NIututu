@@ -91,6 +91,7 @@ try {
             <label class="form-check-label" for="update_enabled">启用更新内容提示</label>
         </div>
         <button type="submit" class="btn btn-primary">保存</button>
+        <a href="/" class="btn btn-secondary">返回首页</a>
     </form>
 
     <div class="mt-5">

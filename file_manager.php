@@ -69,6 +69,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['file'])) {
         // 规范化自定义文件名，移除不安全的字符（允许Unicode字母）
         $customName = preg_replace('/[^\p{L}0-9_\-.\s]/u', '_', $customName);
 
+        // 检查数据库中是否已存在相同 original_name 的记录
+        $checkStmt = $pdo->prepare('SELECT COUNT(*) FROM files WHERE user_id = ? AND original_name = ?');
+        $checkStmt->execute([$userId, $customName]);
+        if ($checkStmt->fetchColumn() > 0) {
+                        $responses[] = ['success' => false, 'error' => "文件名 '{$customName}' 已存在，请换名称。"];
+            continue;
+        }
+
         $mimeType = $files['type'][$i];
         $filesize = intval($files['size'][$i]); // 确保是整数
 

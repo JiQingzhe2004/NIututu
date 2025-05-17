@@ -699,6 +699,10 @@ $updateAnnouncement = $stmt->fetch(PDO::FETCH_ASSOC);
                 <svg width="25" height="25" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="cursor: pointer;" onclick="location.reload();">
                 <path fill-rule="evenodd" clip-rule="evenodd" d="M4 2C4.55228 2 5 2.44772 5 3V5.10125C6.27009 3.80489 8.04052 3 10 3C13.0494 3 15.641 4.94932 16.6014 7.66675C16.7855 8.18747 16.5126 8.75879 15.9918 8.94284C15.4711 9.12689 14.8998 8.85396 14.7157 8.33325C14.0289 6.38991 12.1755 5 10 5C8.36507 5 6.91204 5.78502 5.99935 7H9C9.55228 7 10 7.44772 10 8C10 8.55228 9.55228 9 9 9H4C3.44772 9 3 8.55228 3 8V3C3 2.44772 3.44772 2 4 2ZM4.00817 11.0572C4.52888 10.8731 5.1002 11.146 5.28425 11.6668C5.97112 13.6101 7.82453 15 10 15C11.6349 15 13.088 14.215 14.0006 13L11 13C10.4477 13 10 12.5523 10 12C10 11.4477 10.4477 11 11 11H16C16.2652 11 16.5196 11.1054 16.7071 11.2929C16.8946 11.4804 17 11.7348 17 12V17C17 17.5523 16.5523 18 16 18C15.4477 18 15 17.5523 15 17V14.8987C13.7299 16.1951 11.9595 17 10 17C6.95059 17 4.35905 15.0507 3.39857 12.3332C3.21452 11.8125 3.48745 11.2412 4.00817 11.0572Z" fill="#4A5568"/>
                 </svg>
+                <!-- 搜索功能按钮 -->
+                <button id="show-search-btn" class="btn btn-sm" title="搜索文件">
+                    <svg t="1747516064572" class="icon bi bi-search" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2824" width="25" height="25"><path d="M581.973333 846.933333a380.8 380.8 0 1 1 380.8-380.8A381.226667 381.226667 0 0 1 581.973333 846.933333z m0-688a307.2 307.2 0 1 0 307.2 307.2 307.413333 307.413333 0 0 0-307.2-307.2z" fill="#FA6302" p-id="2825"></path><path d="M146.56 938.666667a36.906667 36.906667 0 0 1-26.026667-64l192-190.933334a36.906667 36.906667 0 0 1 52.053334 52.266667l-192 192a37.333333 37.333333 0 0 1-26.026667 10.666667z" fill="#43D7B4" p-id="2826"></path><path d="M470.826667 274.773333m-49.066667 0a49.066667 49.066667 0 1 0 98.133333 0 49.066667 49.066667 0 1 0-98.133333 0Z" fill="#43D7B4" p-id="2827"></path><path d="M312.106667 684.8l-23.68 23.466667A388.693333 388.693333 0 0 0 341.333333 760.32l23.466667-23.253333a36.906667 36.906667 0 0 0-52.053333-52.266667z" fill="#425300" p-id="2828"></path></svg>
+                </button>
 
                 <?php if ($_SESSION['user']['role'] === 'admin'): ?>
                     <a href="admin.php" class="btn btn-sm btn-outline-secondary">管理用户</a>
@@ -715,14 +719,14 @@ $updateAnnouncement = $stmt->fetch(PDO::FETCH_ASSOC);
                 <li id="refresh">刷新</li>
                 <!-- 其他操作可以在这里添加 -->
                 <!-- 彩蛋 -->
-                <!-- <li id="showPhoto">宝宝</li> -->
+                <li id="showPhoto">宝宝</li>
             </ul>
         </div>
 
         <!-- 彩蛋 灯箱 (Lightbox) -->
         <div id="lightbox" class="lightbox">
             <span class="close">&times;</span>
-            <img class="lightbox-content" src="images/jiaojiao.jpg" alt="照片">
+            <img class="lightbox-content" src="static/tutu.png" alt="照片">
         </div>
 
         <!-- 拖拽上传区域 -->
@@ -1031,6 +1035,62 @@ $updateAnnouncement = $stmt->fetch(PDO::FETCH_ASSOC);
             });
         </script>
     <?php endif; ?>
+
+    <!-- 搜索功能 -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const btn = document.getElementById('show-search-btn');
+        btn && btn.addEventListener('click', function() {
+            // 如果已存在搜索框则不重复加载
+            if(document.getElementById('search-modal-bg')) return;
+            fetch('sousuo.php')
+                .then(r=>r.text())
+                .then(html=>{
+                    document.body.insertAdjacentHTML('beforeend', html);
+    
+                    // 关闭逻辑：支持按钮、遮罩、ESC
+                    const modalBg = document.getElementById('search-modal-bg');
+                    const closeBtn = document.getElementById('close-search');
+                    const form = document.getElementById('search-form');
+                    const input = document.getElementById('search-keyword');
+                    const resultBox = document.getElementById('search-result');
+    
+                    function closeSearchModal() {
+                        if (modalBg && modalBg.parentNode) {
+                            modalBg.parentNode.removeChild(modalBg);
+                        }
+                    }
+                    if (closeBtn) closeBtn.onclick = closeSearchModal;
+                    if (modalBg) modalBg.onclick = function(e) {
+                        if(e.target === modalBg) closeSearchModal();
+                    };
+                    document.addEventListener('keydown', function(e){
+                        if(e.key === 'Escape') closeSearchModal();
+                    });
+    
+                    // 搜索
+                    let lastKeyword = '';
+                    if (form && input && resultBox) {
+                        form.onsubmit = e => e.preventDefault();
+                        input.oninput = function() {
+                            const kw = input.value.trim();
+                            if(kw === lastKeyword) return;
+                            lastKeyword = kw;
+                            resultBox.innerHTML = '<div class="text-center text-muted py-3">搜索中...</div>';
+                            fetch('sousuo.php', {
+                                method: 'POST',
+                                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                                body: 'keyword=' + encodeURIComponent(kw)
+                            })
+                            .then(r=>r.text())
+                            .then(html=>{ resultBox.innerHTML = html; });
+                        };
+                        input.focus();
+                    }
+                });
+        });
+    });
+    </script>
     
     <!-- 引入脚本 -->
     <script src="js/bootstrap.bundle.min.js"></script>
@@ -1585,8 +1645,6 @@ $updateAnnouncement = $stmt->fetch(PDO::FETCH_ASSOC);
         function handleFile(item) {
             const file = item.file;
             const customName = item.customName;
-    
-            console.log('处理文件:', file.name);
             // 阻止上传 .php 文件
             const fileName = file.name.toLowerCase();
             if (fileName.endsWith('.php')) {
@@ -1648,21 +1706,20 @@ $updateAnnouncement = $stmt->fetch(PDO::FETCH_ASSOC);
                 input.focus();
             
                 // 保存新名称
+                let hasSaved = false;
                 const saveName = () => {
+                    if (hasSaved) return;
+                    hasSaved = true;
                     let newName = input.value.trim() || file.name;
-            
-                    // 获取原始文件的扩展名（包含点号）
                     const originalExtension = file.name.substring(file.name.lastIndexOf('.'));
-            
-                    // 检查新名称是否包含扩展名
                     if (!newName.includes('.')) {
-                        // 如果没有扩展名，自动添加原始扩展名
                         newName += originalExtension;
                     }
-            
                     item.customName = newName;
                     title.textContent = newName;
-                    cardBody.replaceChild(title, input);
+                    if (cardBody.contains(input)) {
+                        cardBody.replaceChild(title, input);
+                    }
                 };
             
                 // 监听 Enter 键和失去焦点
@@ -1774,37 +1831,74 @@ $updateAnnouncement = $stmt->fetch(PDO::FETCH_ASSOC);
     });
     </script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            function setThemeBasedOnTime() {
-                const hour = new Date().getHours();
-                console.log(`当前时间: ${hour}`);
-                const body = document.body;
-                const table = document.getElementById('main-table'); // 使用 ID 选择表格
-                const filePreview = document.getElementById('file-preview');
+    document.addEventListener('DOMContentLoaded', function() {
+        function setThemeBasedOnTime() {
+            // 当前登录用户的名字
+            const currentUser = <?php echo json_encode($_SESSION['user']['name']); ?>;
+            // 欢迎信息（深蓝色背景，加大字体）
+            console.log(
+                '%c🎉 欢迎 "%s"',
+                'color: #fff; background: #223a5e; padding: 4px 12px; border-radius: 6px; font-size: 15px;',
+                currentUser
+            );
+            const hour = new Date().getHours();
+            // 当前时间（深紫色背景，默认字体大小）
+            console.log(
+                '%c⏰ 当前时间: ' + hour + ' 点',
+                'color: #fff; background: #3a235e; padding: 4px 12px; border-radius: 6px;'
+            );
+            const body = document.body;
+            const table = document.getElementById('main-table'); // 使用 ID 选择表格
     
-                if (hour >= 6 && hour < 17) {
-                    console.log('设置为日间模式');
-                    body.classList.add('light-theme');
-                    body.classList.remove('dark-theme');
-                    if (table) { // 检查表格是否存在
-                        table.classList.remove('table-dark');
-                    }
-                } else {
-                    console.log('设置为夜间模式');
-                    body.classList.add('dark-theme');
-                    body.classList.remove('light-theme');
-                    if (table) { // 检查表格是否存在
-                        table.classList.add('table-dark');
-                    }
+            if (hour >= 5 && hour < 17) {
+                // 日间主题（深绿色背景，默认字体大小）
+                console.log(
+                    '%c🌞 当前主题：日间',
+                    'color: #fff; background: #225e3a; font-weight: bold; border-radius: 4px; padding: 2px 10px;'
+                );
+                body.classList.add('light-theme');
+                body.classList.remove('dark-theme');
+                if (table) {
+                    table.classList.remove('table-dark');
+                }
+            } else {
+                // 夜间主题（深棕色背景，默认字体大小）
+                console.log(
+                    '%c🌙 当前主题：夜间',
+                    'color: #fff; background: #5e3a22; font-weight: bold; border-radius: 4px; padding: 2px 10px;'
+                );
+                body.classList.add('dark-theme');
+                body.classList.remove('light-theme');
+                if (table) {
+                    table.classList.add('table-dark');
                 }
             }
+        }
     
-            // 设置主题
-            setThemeBasedOnTime();
-    
-            // 每小时检查一次以更新主题
-            setInterval(setThemeBasedOnTime, 10 * 60 * 1000);
+        // 控制台显示页面加载时长和版权
+        window.addEventListener('load', function() {
+            const startTime = performance.timing.navigationStart;
+            const endTime = Date.now();
+            const loadTime = endTime - startTime;
+            // 加载时长（深青色背景，默认字体大小）
+            console.log(
+                '%c🚀 页面加载时长: ' + loadTime + ' ms',
+                'color: #fff; background: #225e5e; padding: 4px 12px; border-radius: 6px;'
+            );
+            // 版权（深红色背景，加大字体）
+            console.log(
+                '%c© 2024-%s 吉庆喆.牛图图传输. 版权所有.',
+                'color: #fff; background: #5e2222; padding: 4px 12px; border-radius: 6px; font-size: 15px;',
+                new Date().getFullYear()
+            );
         });
+    
+        // 设置主题
+        setThemeBasedOnTime();
+    
+        // 每小时检查一次以更新主题
+        setInterval(setThemeBasedOnTime, 10 * 60 * 1000);
+    });
     </script>
 </body>
 </html>

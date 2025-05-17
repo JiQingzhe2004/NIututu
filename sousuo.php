@@ -65,12 +65,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <tbody>
             <?php foreach ($results as $file): ?>
                 <tr class="d-none d-sm-table-row">
-                    <td title="<?= htmlspecialchars($file['original_name']) ?>">
-                        <?= htmlspecialchars($file['original_name']) ?>
-                    </td>
-                    <td><span class="badge bg-secondary"><?= htmlspecialchars($file['type']) ?></span></td>
+                    <td><span class="badge bg-secondary"><?= htmlspecialchars($file['original_name']) ?></span></td>
+                    <td><?= htmlspecialchars($file['type']) ?></td>
                     <td><?= number_format($file['size'] / 1024, 2) ?> KB</td>
-                    <td><?= htmlspecialchars($file['username'] ?? '未知') ?></td>
+                    <td><span class="badge bg-secondary"><?= htmlspecialchars($file['username'] ?? '未知') ?></span></td>
                     <td>
                         <button class="btn btn-info btn-sm rounded-pill px-3" onclick="viewFile(<?= $file['id'] ?>)">查看</button>
                         <button class="btn btn-success btn-sm rounded-pill px-3" onclick="downloadFile(<?= $file['id'] ?>, '<?= htmlspecialchars($file['original_name'], ENT_QUOTES) ?>')">下载</button>
@@ -79,9 +77,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <tr class="d-table-row d-sm-none">
                     <td colspan="3">
                         <div class="search-mobile-card d-flex flex-column small text-muted">
-                            <div><strong>文件名：</strong> <?= htmlspecialchars($file['original_name']) ?></div>
+                            <div><strong>文件名：</strong> <span class="badge bg-secondary"><?= htmlspecialchars($file['original_name']) ?></span></div>
                             <div><strong>类型：</strong> <?= htmlspecialchars($file['type']) ?> ｜ <strong>大小：</strong> <?= number_format($file['size'] / 1024, 2) ?> KB</div>
-                            <div><strong>上传人：</strong> <?= htmlspecialchars($file['username'] ?? '未知') ?></div>
+                            <div><strong>上传人：</strong> <span class="badge bg-secondary"><?= htmlspecialchars($file['username'] ?? '未知') ?></span></div>
                             <div class="mt-2">
                                 <button class="btn btn-info btn-sm rounded-pill px-3 me-2" onclick="viewFile(<?= $file['id'] ?>)">查看</button>
                                 <button class="btn btn-success btn-sm rounded-pill px-3" onclick="downloadFile(<?= $file['id'] ?>, '<?= htmlspecialchars($file['original_name'], ENT_QUOTES) ?>')">下载</button>

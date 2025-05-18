@@ -229,7 +229,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </tbody>
             </table>
             <button type="submit" name="upload" class="btn btn-success">确认上传</button>
-            <a href="upload_users.php" class="btn btn-secondary">重新选择文件</a>
+            <a href="upload_users" class="btn btn-secondary">重新选择文件</a>
         </form>
     <?php endif; ?>
 

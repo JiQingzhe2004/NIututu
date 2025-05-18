@@ -190,7 +190,7 @@ jane_admin	Jane Admin	adminpass	admin
             <button type="submit" class="btn btn-primary">上传并添加用户</button>
             <button type="button" class="btn btn-secondary" onclick="history.back();">返回上一页</button>
             <a href="用户模板.txt" class="btn btn-secondary">下载模板文件</a>
-            <a href="upload_users.php" class="btn btn-secondary btn-info mt-mobile">换方式</a>
+            <a href="upload_users" class="btn btn-secondary btn-info mt-mobile">换方式</a>
         </form>
         <div id="upload-results" class="mt-4">
             <h3>上传结果：</h3>

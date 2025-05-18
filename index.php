@@ -705,12 +705,12 @@ $updateAnnouncement = $stmt->fetch(PDO::FETCH_ASSOC);
                 </button>
 
                 <?php if ($_SESSION['user']['role'] === 'admin'): ?>
-                    <a href="admin.php" class="btn btn-sm btn-outline-secondary">管理用户</a>
-                    <a href="manage_announcement.php" class="btn btn-sm btn-outline-secondary" target="_blank" rel="noopener noreferrer">首页公告</a>
-                    <a href="manage_update_content.php" class="btn btn-sm btn-outline-secondary" target="_blank" rel="noopener noreferrer">更新提示</a>
+                    <a href="admin" class="btn btn-sm btn-outline-secondary">管理用户</a>
+                    <a href="manage_announcement" class="btn btn-sm btn-outline-secondary" target="_blank" rel="noopener noreferrer">首页公告</a>
+                    <a href="manage_update_content" class="btn btn-sm btn-outline-secondary" target="_blank" rel="noopener noreferrer">更新提示</a>
                 <?php endif; ?>
-                <a href="change_password.php" class="btn btn-sm btn-outline-secondary">修改密码</a>
-                <a href="logout.php" class="btn btn-sm btn-outline-secondary">退出登录</a>
+                <a href="change_password" class="btn btn-sm btn-outline-secondary">修改密码</a>
+                <a href="logout" class="btn btn-sm btn-outline-secondary">退出登录</a>
             </div>
         </div>
         <!-- 右键菜单 -->
@@ -825,7 +825,7 @@ $updateAnnouncement = $stmt->fetch(PDO::FETCH_ASSOC);
             <small style="color:#888;">
                 &copy; 2024-<?php echo date("Y"); ?>
                 吉庆喆.文件管理系统. 版权所有.
-                <a href="version_log.php" style="text-decoration:none;">
+                <a href="version_log" style="text-decoration:none;">
                     <span style="background: linear-gradient(90deg,#f093fb,#f5576c); color:#fff; border-radius: 4px; padding: 2px 8px; margin-left: 8px; cursor:pointer;">
                         V <?php echo $app_version; ?>
                     </span>
@@ -1008,7 +1008,7 @@ $updateAnnouncement = $stmt->fetch(PDO::FETCH_ASSOC);
                 <small style="color:#888;">
                     &copy; 2024-<?php echo date("Y"); ?>
                     吉庆喆.文件管理系统. 版权所有.
-                    <a href="version_log.php" style="text-decoration:none;">
+                    <a href="version_log" style="text-decoration:none;">
                         <span style="background: linear-gradient(90deg,#f093fb,#f5576c); color:#fff; border-radius: 4px; padding: 2px 8px; margin-left: 8px; cursor:pointer;">
                             V <?php echo $app_version; ?>
                         </span>
@@ -1441,7 +1441,7 @@ $updateAnnouncement = $stmt->fetch(PDO::FETCH_ASSOC);
     // 将 viewFile 绑定到 window 对象，确保全局可访问
     window.viewFile = function(fileId) {
         //console.log(`查看文件ID: ${fileId}`);
-        window.open(`view_file.php?id=${fileId}`, '_blank');
+        window.open(`view_file?id=${fileId}`, '_blank');
     };
     
     // 加载文件列表
@@ -1570,7 +1570,7 @@ $updateAnnouncement = $stmt->fetch(PDO::FETCH_ASSOC);
         // 添加查看文件的函数
         function viewFile(fileId) {
             console.log(`查看文件ID: ${fileId}`); // 调试信息
-            window.open(`view_file.php?id=${fileId}`, '_blank');
+            window.open(`view_file?id=${fileId}`, '_blank');
         }
     
         // 前端删除文件的函数

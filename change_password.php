@@ -143,7 +143,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </form>
             </div>
         </div>
-        <a href="index.php" class="btn btn-secondary w-100 mt-3">返回首页</a>
+        <a href="index" class="btn btn-secondary w-100 mt-3">返回首页</a>
     </div>
     <script src="js/bootstrap.bundle.min.js"></script>
     <script>

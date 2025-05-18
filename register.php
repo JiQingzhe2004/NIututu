@@ -102,7 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                     <button type="submit" class="btn btn-primary">注册用户</button>
                     <button type="button" class="btn btn-secondary mt-3" onclick="history.back();">返回上一页</button>
-                    <a href="upload_users.php" class="btn btn-secondary mt-3" style="background-color: red;">上传用户</a>
+                    <a href="upload_users" class="btn btn-secondary mt-3" style="background-color: red;">上传用户</a>
                 </form>
             </div>
         </div>

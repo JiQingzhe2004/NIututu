@@ -69,7 +69,7 @@ $announcement = $stmt->fetch(PDO::FETCH_ASSOC);
         <input type="hidden" name="update_enabled" value="<?php echo htmlspecialchars($previous_update_enabled); ?>">
         -->
         <button type="submit" class="btn btn-primary">更新公告</button>
-        <a href="index.php" class="btn btn-secondary">返回首页</a>
+        <a href="index" class="btn btn-secondary">返回首页</a>
     </form>
 </div>
 <script src="js/bootstrap.bundle.min.js"></script>

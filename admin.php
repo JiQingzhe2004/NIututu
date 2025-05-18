@@ -149,9 +149,9 @@ $users = $stmt->fetchAll();
             </div>
             <div>
                 <button type="button" class="btn btn-sm btn-outline-secondary" onclick="history.back();">返回上一页</button>
-                <a href="index.php" class="btn btn-sm btn-outline-secondary">返回首页</a>
-                <a href="change_password.php" class="btn btn-sm btn-outline-secondary">修改密码</a>
-                <a href="logout.php" class="btn btn-sm btn-outline-secondary">退出登录</a>
+                <a href="index" class="btn btn-sm btn-outline-secondary">返回首页</a>
+                <a href="change_password" class="btn btn-sm btn-outline-secondary">修改密码</a>
+                <a href="logout" class="btn btn-sm btn-outline-secondary">退出登录</a>
             </div>
         </div>
 
@@ -165,7 +165,7 @@ $users = $stmt->fetchAll();
 
         <!-- 添加和删除用户按钮 -->
         <div class="mb-3 d-flex justify-content-between">
-            <a href="register.php" class="btn btn-success">添加新用户</a>
+            <a href="register" class="btn btn-success">添加新用户</a>
             <button type="submit" form="delete-form" name="delete_selected" class="btn btn-danger" onclick="return confirm('确定要删除选中的用户吗？');">删除选中用户</button>
         </div>
 
@@ -203,9 +203,9 @@ $users = $stmt->fetchAll();
                                         <?php endif; ?>
                                     </td>
                                     <td>
-                                        <a href="edit_user.php?id=<?php echo $user['id']; ?>" class="btn btn-sm btn-warning">编辑</a>
+                                        <a href="edit_user?id=<?php echo $user['id']; ?>" class="btn btn-sm btn-warning">编辑</a>
                                         <?php if ($user['id'] !== $_SESSION['user']['id']): ?>
-                                            <a href="admin.php?delete=<?php echo $user['id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('确定要删除用户 <?php echo htmlspecialchars($user['username']); ?> 吗？');">删除</a>
+                                            <a href="admin?delete=<?php echo $user['id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('确定要删除用户 <?php echo htmlspecialchars($user['username']); ?> 吗？');">删除</a>
                                         <?php endif; ?>
                                     </td>
                                 </tr>

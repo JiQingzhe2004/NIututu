@@ -247,7 +247,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <small style="color:#888;">
                     &copy; 2024-<?php echo date("Y"); ?>
                     吉庆喆.文件管理系统. 版权所有.
-                    <a href="version_log.php" style="text-decoration:none;">
+                    <a href="version_log" style="text-decoration:none;">
                         <span style="background: linear-gradient(90deg,#f093fb,#f5576c); color:#fff; border-radius: 4px; padding: 2px 8px; margin-left: 8px; cursor:pointer;">
                             V <?php echo $app_version; ?>
                         </span>

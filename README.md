@@ -11,20 +11,18 @@
 
 1. 首先将整个压缩包进行解压，找到名为“phpEnv8.9.6-Setup.exe”的文件，双击进行安装。（[压缩包版本，由于Gitee最大支持上传100MB，所以不再上传安装包版本，按住键盘Ctrl键并点击即可下载](https://dl.phpenv.cn/release/phpEnv.7z)）
 
-   
-
    ```https
    https://dl.phpenv.cn/release/phpEnv.7z
    或者直接复制此连接到浏览器访问
    ```
-
+   
 2. 安装时最好选择D盘或者E盘的根目录，方便后续使用。
 
 3. 将文件夹内的“`tools.zip`”压缩包解压后，放入到刚才安装的软件的目录中。
 
 4. 然后打开刚才安装的软件“`phpEnv`”。
 
-5. 点击左上角应用软件→设置→端口，将Nginx端口改为非占用端口，例如：7890
+5. 点击左上角应用软件→设置→端口，将`Nginx`端口改为非占用端口，例如：`7890`
 
 6. 改完以后，到首页，点击 工具→MySQL工具→重置密码，输入密码，点击确定。
 
@@ -34,7 +32,6 @@
 
 9. 新建`.env`文件，配置数据库连接信息，`.env.copy`是模版。
    
-
 10. 回到软件的首页，点击右下角数据库，会打开数据库连接工具“`HeidiSQL`”。
 
 11. 在右侧输入密码，点击连接，如果连接成功，会看到数据库列表。
@@ -62,8 +59,6 @@
 如何修改文件上传大小的限制？
 1.  修改`index.php`文件内的
     
-    
-    
     ```php
     const maxSize = 300 * 1024 * 1024; // 300MB
     if (file.size > maxSize) {
@@ -75,29 +70,24 @@
     ​    可以将300改为3000，这样就改为限制3GB，修改之后保存！
 
 
-
-
 2. 修改`file_manager.php`文件内的
 
-   
-
    ```PHP
-   // 文件大小限制
+// 文件大小限制
            $maxFileSize = 300 * 1024 * 1024; // 300MB
            if ($filesize > $maxFileSize) {
            $responses[] = ['success' => false, 'error' => '文件大小超过限制 (最大300MB)。'];
            continue;
            }
    ```
-
+   
    ​    也将300改为3000，要和`index.php`中的改为一致，修改之后保存！
 
 3. 打开phpEnv软件，鼠标放到上面的服务那里，修改PHP的`php.ini`文件中的
 
-   
-
    ```ini
    upload_max_filesize = 300M （允许上传的最大文件大小）
+   max_file_uploads = 20 （同时上传文件最大个数）
    post_max_size = 310M （允许接收的最大表单数据大小，应大于或等upload_max_filesize）
    max_execution_time = 300 （增加脚本执行和输入解析的时间，防止大文件上传时超时）
    max_input_time = 300 （增加脚本执行和输入解析的时间，防止大文件上传时超时）
@@ -107,17 +97,38 @@
    ​            这些根据自己需求来设置，修改之后保存！
 
 4. 修改Nginx的`nginx.conf`文件中的
-              
-
-   ```conf
-   client_max_body_size 300M  （nginx服务的上传限制）
+   
+   ```nginx
+   client_max_body_size 300M  #（nginx服务的上传限制）
    ```
-
+   
    修改之后保存！
-
-5. 修改`index.php`中的下方代码，这里是首页上方的弹窗提示，改了多少，这里就改为多少，改完保存！
-
-    
+   
+   如果你打开`nginx.conf`后没找到这个字段，那大概率是一个标准的配置。只需要在`server { }`里面加上`client_max_body_size 300m;` ，这里的300m意思就是最大上传300MB的文件，再大就不允许上传。
+   
+   示例如下：
+   
+   ```nginx
+   server {
+       listen 80;
+       server_name _;
+       autoindex on;
+       index index.html index.htm index.php;
+       root /Applications/EServer/childApp/server/nginx/html;
+   
+       access_log logs/access.log;
+       error_log logs/error.log;
+   
+       client_max_body_size 300m;  # 👈 添加这一行
+   
+       location = /favicon.ico {
+           log_not_found off;
+           access_log off;
+       }
+   }
+   ```
+   
+5. ~~修改`index.php`中的下方代码，这里是首页上方的弹窗提示，改了多少，这里就改为多少，改完保存！~~此提示已存放在数据库内，登录管理员账号后，进入`首页公告`界面修改。
 
    ```php+HTML
    <!-- 系统使用公告 -->
@@ -127,8 +138,8 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="关闭"></button>
    </div>
    ```
-
+   
    >
    > （现在已改为读取数据库内的内容）
-
+   
 6. 回到软件的首页，点击右边的重启服务按钮，等待重启完毕即可！

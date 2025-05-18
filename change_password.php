@@ -33,12 +33,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $user = $stmt->fetch();
 
         if ($user && password_verify($currentPassword, $user['password'])) {
-            // 更新密码
+            // 更新密码并清空remember_token
             $newPasswordHash = password_hash($newPassword, PASSWORD_DEFAULT);
-            $stmt = $pdo->prepare('UPDATE users SET password = ? WHERE id = ?');
+            $stmt = $pdo->prepare('UPDATE users SET password = ?, remember_token = NULL WHERE id = ?');
             try {
                 $stmt->execute([$newPasswordHash, $_SESSION['user']['id']]);
-                $message = "密码已成功更新。";
+                // 清除本地 remember_token cookie
+                setcookie('remember_token', '', time() - 3600, '/', '', isset($_SERVER['HTTPS']), true);
+                $message = "密码已成功更新，已清除免登录信息。";
                 $messageType = 'success';
             } catch (PDOException $e) {
                 $message = "更新密码失败: " . $e->getMessage();
@@ -57,18 +59,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <link href="favicon.ico" rel="icon">
     <meta name="viewport" content="width=device-width,initial-scale=1">
+    <link rel="icon" type="image/png" href="/static/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
+    <link rel="shortcut icon" href="/static/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-title" content="牛图图传输" />
+    <link rel="manifest" href="/static/site.webmanifest" />
     <title>修改密码</title>
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <style>
-        /* 自定义样式 */
         body {
             background-color: #f8f9fa;
+            color: #222;
         }
         .container {
             max-width: 500px;
         }
         .card {
             margin-top: 50px;
+            background-color: #fff;
+            color: #222;
+            border-color: #ddd;
+        }
+        /* 夜间模式样式 */
+        body.night-mode {
+            background-color: #181a1b !important;
+            color: #eee !important;
+        }
+        body.night-mode .card {
+            background-color: #23272b !important;
+            color: #eee !important;
+            border-color: #222 !important;
+        }
+        body.night-mode .form-control,
+        body.night-mode .form-label {
+            background-color: #23272b !important;
+            color: #eee !important;
+        }
+        body.night-mode .btn-primary {
+            background-color: #3b82f6 !important;
+            border-color: #3b82f6 !important;
+        }
+        body.night-mode .btn-secondary {
+            background-color: #374151 !important;
+            border-color: #374151 !important;
+        }
+        body.night-mode .alert {
+            background-color: #222 !important;
+            color: #fbbf24 !important;
+            border-color: #444 !important;
         }
     </style>
 </head>
@@ -107,5 +146,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <a href="index.php" class="btn btn-secondary w-100 mt-3">返回首页</a>
     </div>
     <script src="js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 6:00-18:00为亮色，其余为暗色（夜间模式加body.night-mode类）
+        (function () {
+            var hour = new Date().getHours();
+            if (hour < 6 || hour >= 18) {
+                document.body.classList.add('night-mode');
+            }
+        })();
+    </script>
 </body>
 </html>

@@ -38,7 +38,8 @@ $fileExtension = strtolower(pathinfo($file['original_name'], PATHINFO_EXTENSION)
 
 // 定义支持的媒体类型（仅图片和视频）
 $images = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'];
-$videos = ['mp4', 'webm', 'ogg'];
+$videos = ['mp4', 'webm', 'ogg', 'avi', 'mov', 'mkv'];
+$audios = ['mp3', 'wav', 'ogg', 'flac', 'aac'];
 
 // 格式化文件大小函数
 function formatFileSize($bytes) {
@@ -58,12 +59,12 @@ function formatFileSize($bytes) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-<link rel="icon" type="image/png" href="/static/favicon-96x96.png" sizes="96x96" />
-<link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
-<link rel="shortcut icon" href="/static/favicon.ico" />
-<link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png" />
-<meta name="apple-mobile-web-app-title" content="牛图图传输" />
-<link rel="manifest" href="/static/site.webmanifest" />
+    <link rel="icon" type="image/png" href="/static/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
+    <link rel="shortcut icon" href="/static/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-title" content="牛图图传输" />
+    <link rel="manifest" href="/static/site.webmanifest" />
     <title>查看文件 - <?php echo htmlspecialchars($file['original_name']); ?></title>
     <!-- 使用本地 Bootstrap -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
@@ -109,6 +110,20 @@ function formatFileSize($bytes) {
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             cursor: pointer;
             object-fit: contain;
+        }
+        .custom-player {
+            padding: 20px;
+            border-radius: 12px;
+            background: linear-gradient(145deg, rgb(212 185 255), rgb(184 184 184));
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            margin: 0 auto;
+            transition: background 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        body.dark-theme .custom-player {
+            background: linear-gradient(145deg, #21674d, #4a3770);
+            box-shadow: 0 4px 12px rgba(255, 255, 255, 0.05);
         }
         /* 自定义灯箱样式 */
         .lightbox {
@@ -274,12 +289,30 @@ function formatFileSize($bytes) {
                     echo '<video controls class="img-fluid" loading="lazy">
                             <source src="' . htmlspecialchars($file['path']) . '" type="' . htmlspecialchars($file['type']) . '">
                             您的浏览器不支持视频标签。
-                          </video>';
+                        </video>';
+                } elseif (in_array($fileExtension, $audios)) {
+                    echo '
+                    <div class="custom-player">
+                        <div id="waveform"></div>
+                        <div class="wave-controls d-flex justify-content-between align-items-center mt-3">
+                            <button id="playPause" class="btn btn-outline-primary rounded-circle" style="width: 48px; height: 48px;">
+                                <svg id="playIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M6 4.5v7l6-3.5-6-3.5z"/>
+                                </svg>
+                                <svg id="pauseIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16" style="display: none;">
+                                    <path d="M5.5 3.5A.5.5 0 0 1 6 3h1a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5H6a.5.5 0 0 1-.5-.5v-9zm4 0A.5.5 0 0 1 10 3h1a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-9z"/>
+                                </svg>
+                            </button>
+                            <span id="currentTime">00:00</span> / <span id="duration">00:00</span>
+                            <input type="range" id="volume" min="0" max="1" step="0.01" value="1" style="width: 120px;">
+                        </div>
+                    </div>';
                 } else {
                     echo '<p>无法预览此文件类型。</p>';
                 }
                 ?>
             </div>
+            <hr>
             <div class="file-header d-flex justify-content-between align-items-center mb-4">
                 <div class="file-name">
                     <?php echo htmlspecialchars($file['original_name']); ?>
@@ -317,6 +350,7 @@ function formatFileSize($bytes) {
 
     <!-- 使用本地 Bootstrap JS -->
     <script src="js/bootstrap.bundle.min.js"></script>
+    <script src="js/wavesurfer.js"></script>
     <script>
         // 获取灯箱元素
         var lightbox = document.getElementById('lightbox');
@@ -331,20 +365,71 @@ function formatFileSize($bytes) {
         }
 
         // 点击关闭按钮关闭灯箱
-        closeBtn.onclick = function() {
-            lightbox.style.display = 'none';
+        if (closeBtn) {
+            closeBtn.onclick = function() {
+                lightbox.style.display = 'none';
+            }
         }
 
         // 点击灯箱背景关闭灯箱
-        lightbox.onclick = function(event) {
-            if (event.target == lightbox) {
-                lightbox.style.display = 'none';
+        if (lightbox) {
+            lightbox.onclick = function(event) {
+                if (event.target == lightbox) {
+                    lightbox.style.display = 'none';
+                }
             }
         }
     </script>
     <script>
-                // theme-switcher.js
-        
+        const wavesurfer = WaveSurfer.create({
+            container: '#waveform',
+            waveColor: '#dee2e6',
+            progressColor: '#0d6efd',
+            height: 80,
+            barWidth: 2,
+            responsive: true
+        });
+
+        wavesurfer.load('<?php echo htmlspecialchars($file['path']); ?>');
+
+        const playBtn = document.getElementById('playPause');
+        const playIcon = document.getElementById('playIcon');
+        const pauseIcon = document.getElementById('pauseIcon');
+        const currentTime = document.getElementById('currentTime');
+        const duration = document.getElementById('duration');
+        const volumeSlider = document.getElementById('volume');
+
+        wavesurfer.on('ready', () => {
+            duration.textContent = formatTime(wavesurfer.getDuration());
+        });
+
+        wavesurfer.on('audioprocess', () => {
+            currentTime.textContent = formatTime(wavesurfer.getCurrentTime());
+        });
+
+        wavesurfer.on('seek', () => {
+            currentTime.textContent = formatTime(wavesurfer.getCurrentTime());
+        });
+
+        playBtn.addEventListener('click', () => {
+            wavesurfer.playPause();
+            const isPlaying = wavesurfer.isPlaying();
+            playIcon.style.display = isPlaying ? 'none' : 'inline';
+            pauseIcon.style.display = isPlaying ? 'inline' : 'none';
+        });
+
+        volumeSlider.addEventListener('input', () => {
+            wavesurfer.setVolume(volumeSlider.value);
+        });
+
+        function formatTime(sec) {
+            const m = Math.floor(sec / 60).toString().padStart(2, '0');
+            const s = Math.floor(sec % 60).toString().padStart(2, '0');
+            return `${m}:${s}`;
+        }
+    </script>
+    <script>
+        // theme-switcher.js
         document.addEventListener('DOMContentLoaded', function() {
             function setThemeBasedOnTime() {
                 const hour = new Date().getHours();
@@ -353,7 +438,7 @@ function formatFileSize($bytes) {
                 const tables = document.querySelectorAll('.table-dark');
                 const announcement = document.querySelector('.announcement');
         
-                if (hour >= 6 && hour < 18) {
+                if (hour >= 5 && hour < 17) {
                     body.classList.add('light-theme');
                     body.classList.remove('dark-theme');
                     html.classList.add('light-theme');

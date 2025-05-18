@@ -1175,7 +1175,6 @@ $updateAnnouncement = $stmt->fetch(PDO::FETCH_ASSOC);
     </script>
     <script>
         // 刷新
-                // 简化的刷新功能
         function refreshFileList() {
             // 显示加载图标
             const uploadLoading = document.getElementById('upload-loading');
@@ -1473,11 +1472,10 @@ $updateAnnouncement = $stmt->fetch(PDO::FETCH_ASSOC);
             // 判断是否为图片或视频类型，添加查看按钮
             const viewButton = (file.type && (file.type.startsWith('image/') || file.type.startsWith('video/'))) ?
                 `<button class="btn btn-info btn-sm me-1" onclick="viewFile(${file.id})">查看</button>` : '';
-
-            // 判断是否为MP3文件，添加播放按钮
-            const playButton = (file.type && (file.type === 'audio/mpeg' || file.name.toLowerCase().endsWith('.mp3'))) ?
+            
+            // 判断是否为音频类型，添加播放按钮
+            const playButton = (file.type && file.type.startsWith('audio/')) ?
                 `<button class="btn btn-warning btn-sm me-1" onclick="playMP3(${file.id}, '${escapeHtml(file.original_name)}')">播放</button>` : '';
-
             const accessBadge = file.access === 'public' ?
                 `<span class="badge bg-success">公开</span>` :
                 `<span class="badge bg-secondary">私密</span>`;

@@ -228,7 +228,7 @@ $users = $stmt->fetchAll();
         const tables = document.querySelectorAll('.table-dark'); // 选择所有具有 table-dark 类的表格
         const announcement = document.querySelector('.announcement'); // 公告区域
 
-        if (hour >= 6 && hour < 18) {
+        if (hour >= 5 && hour < 17) {
             body.classList.add('light-theme');
             body.classList.remove('dark-theme');
             html.classList.add('light-theme');

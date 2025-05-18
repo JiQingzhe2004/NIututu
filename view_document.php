@@ -287,7 +287,7 @@ if ($isOfficeFile) {
                 const tables = document.querySelectorAll('.table-dark');
                 const announcement = document.querySelector('.announcement');
 
-                if (hour >= 6 && hour < 18) {
+                if (hour >= 5 && hour < 17) {
                     body.classList.add('light-theme');
                     body.classList.remove('dark-theme');
                     html.classList.add('light-theme');

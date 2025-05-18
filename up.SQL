@@ -55,6 +55,7 @@ CREATE TABLE `users` (
   `password` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `role` enum('admin','user') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'user',
+  `remember_token` varchar(64) DEFAULT NULL, -- 修正字段名并加默认值
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`),
   KEY `idx_users_created_at` (`created_at`),
@@ -63,7 +64,6 @@ CREATE TABLE `users` (
 
 INSERT INTO users (username, name, password, role) VALUES
 ('admin', '管理员', '$2y$10$C8d14PNIfOL3xFsntqcEjuQpg2oMMwTKcb7aVQo.V9uRjsqlxlMq2', 'admin');
-
 -- 外键约束
 ALTER TABLE `files`
   ADD CONSTRAINT `files_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;

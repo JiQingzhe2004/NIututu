@@ -820,10 +820,21 @@ $updateAnnouncement = $stmt->fetch(PDO::FETCH_ASSOC);
             </table>
         </div>
         <!-- 版权信息 -->
-        <div class="text-center mt-3">
-            <small>&copy; 2024-(<?php echo date("Y-m-d"); ?>) 吉庆喆.牛图图传输. 版权所有. <br> V 3.5.7版本.</small>
+        <?php $app_version = require __DIR__ . '/version.php'; ?>
+        <div class="text-center mt-4">
+            <small style="color:#888;">
+                &copy; 2024-<?php echo date("Y"); ?>
+                吉庆喆.文件管理系统. 版权所有.
+                <a href="version_log.php" style="text-decoration:none;">
+                    <span style="background: linear-gradient(90deg,#f093fb,#f5576c); color:#fff; border-radius: 4px; padding: 2px 8px; margin-left: 8px; cursor:pointer;">
+                        V <?php echo $app_version; ?>
+                    </span>
+                </a>
+                <span style="margin-left:8px; color:#5e3a22; font-weight:bold;">
+                    <?php echo date("Y-m-d H:i"); ?>
+                </span>
+            </small>
         </div>
-    </div>
     <!-- 悬浮音频播放器 -->
     <div id="audio-player" class="audio-player">
         <div class="player-header">
@@ -991,8 +1002,21 @@ $updateAnnouncement = $stmt->fetch(PDO::FETCH_ASSOC);
             <!-- 修改关闭按钮，添加红色边框 -->
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="关闭" style="border: 2px solid red;"></button>
             <!-- 版权信息 -->
-            <div class="text-center mt-3">
-                <small>&copy; 2024-(<?php echo date("Y-m-d"); ?>) 吉庆喆.文件管理系统. 版权所有.</small>
+            <?php $app_version = require __DIR__ . '/version.php'; ?>
+            <!-- 版权信息 -->
+            <div class="text-center mt-4">
+                <small style="color:#888;">
+                    &copy; 2024-<?php echo date("Y"); ?>
+                    吉庆喆.文件管理系统. 版权所有.
+                    <a href="version_log.php" style="text-decoration:none;">
+                        <span style="background: linear-gradient(90deg,#f093fb,#f5576c); color:#fff; border-radius: 4px; padding: 2px 8px; margin-left: 8px; cursor:pointer;">
+                            V <?php echo $app_version; ?>
+                        </span>
+                    </a>
+                    <span style="margin-left:8px; color:#5e3a22; font-weight:bold;">
+                        <?php echo date("Y-m-d H:i"); ?>
+                    </span>
+                </small>
             </div>
         </div>
         <script>
@@ -1333,26 +1357,6 @@ $updateAnnouncement = $stmt->fetch(PDO::FETCH_ASSOC);
                 uploadButton.classList.add('btn-secondary');
             }
         }
-        
-        // 函数：上传按钮的状态
-        // 监听文件输入的变化
-        // fileInput.addEventListener('change', updateUploadButton);
-
-        // 初始化按钮状态
-        // updateUploadButton();
-
-        // 监听窗口焦点变化，以处理用户可能在文件选择对话框中取消选择的情况
-        // window.addEventListener('focus', function() {
-            // 延时执行，以确保文件选择对话框关闭后再检查文件选择状态
-            // setTimeout(updateUploadButton, 100);
-        // });
-
-        // 监听文件输入获得焦点时的事件
-        // fileInput.addEventListener('click', function() {
-            // 没有选择文件时，保持按钮为禁用状态
-            // 可选：清除文件输入值以允许再次选择相同文件
-            // fileInput.value = '';
-        // });
     
         // 替换 uploadForm 的提交事件处理
         uploadForm.addEventListener('submit', function (event) {

@@ -219,7 +219,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <?php if (isset($error)) : ?>
                     <div class="alert alert-danger"><?php echo htmlspecialchars($error); ?></div>
                 <?php endif; ?>
-                
+
                 <form method="post" autocomplete="off">
                     <div class="mb-3">
                         <label for="username" class="form-label">用户名</label>
@@ -241,9 +241,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <button type="submit" class="btn btn-primary">登录</button>
                 </form>
             </div>
+            <?php $app_version = require __DIR__ . '/version.php'; ?>
             <!-- 版权信息 -->
-            <div class="text-center">
-                <small>&copy; 2024-<?php echo date("Y-m-d"); ?> 吉庆喆.文件管理系统. 版权所有. V 3.5.7版本.</small>
+            <div class="text-center mt-4">
+                <small style="color:#888;">
+                    &copy; 2024-<?php echo date("Y"); ?>
+                    吉庆喆.文件管理系统. 版权所有.
+                    <a href="version_log.php" style="text-decoration:none;">
+                        <span style="background: linear-gradient(90deg,#f093fb,#f5576c); color:#fff; border-radius: 4px; padding: 2px 8px; margin-left: 8px; cursor:pointer;">
+                            V <?php echo $app_version; ?>
+                        </span>
+                    </a>
+                    <span style="margin-left:8px; color:#5e3a22; font-weight:bold;">
+                        <?php echo date("Y-m-d H:i"); ?>
+                    </span>
+                </small>
             </div>
         </div>
     </div>

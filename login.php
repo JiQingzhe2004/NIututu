@@ -45,7 +45,7 @@ if (!isset($_SESSION['user']) && isset($_COOKIE['remember_token'])) {
         ];
         // 刷新 token 有效期
         setcookie('remember_token', $_COOKIE['remember_token'], time() + $remember_seconds, '/', '', isset($_SERVER['HTTPS']), true);
-        header('Location: index.php');
+        header('Location: index');
         exit();
     }
 }
@@ -83,7 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         // 跳转到文件管理页面
-        header('Location: index.php');
+        header('Location: index');
         exit();
     } else {
         $error = '用户名或密码错误';

@@ -7,7 +7,7 @@ if (session_status() == PHP_SESSION_NONE) {
 // 检查会话中是否存在用户信息
 if (!isset($_SESSION['user'])) {
     // 未登录，重定向到登录页面
-    header('Location: login.php');
+    header('Location: login');
     exit();
 }
 

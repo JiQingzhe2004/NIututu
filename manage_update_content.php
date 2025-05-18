@@ -4,7 +4,7 @@ require 'config.php';
 
 // 检查用户是否已登录并是管理员
 if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
-    header('Location: login.php');
+    header('Location: login');
     exit();
 }
 

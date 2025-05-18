@@ -12,6 +12,6 @@ if (isset($_SESSION['user'])) {
 setcookie('remember_token', '', time() - 3600, '/', '', isset($_SERVER['HTTPS']), true);
 
 session_destroy();
-header('Location: login.php');
+header('Location: login');
 exit();
 ?>

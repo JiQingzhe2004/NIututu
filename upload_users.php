@@ -135,6 +135,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <button type="submit" name="parse" class="btn btn-primary px-4 fw-bold me-2 shadow-sm">解析</button>
             <button type="button" class="btn btn-secondary px-4 me-2" onclick="history.back();">返回上一页</button>
             <a href="批量创建用户模板.xlsx" class="btn btn-outline-primary px-4">下载模板文件</a>
+            <a href="up_user" class="btn btn-secondary btn-info mt-mobile">换方式</a>
         </form>
         <style>
             #drop-area.dragover {

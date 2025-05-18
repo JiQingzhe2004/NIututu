@@ -5,7 +5,7 @@ require 'check_login.php';
 // 检查当前用户是否为管理员
 if ($_SESSION['user']['role'] !== 'admin') {
     // 非管理员用户重定向到首页或显示错误信息
-    header('Location: index.php');
+    header('Location: index');
     exit;
 }
 require 'config.php'; // 包含数据库连接配置

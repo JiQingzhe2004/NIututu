@@ -387,41 +387,38 @@ function formatFileSize($bytes) {
             progressColor: '#0d6efd',
             height: 80,
             barWidth: 2,
-            responsive: true
+            responsive: true,
+            dragToSeek: true // 允许拖动波形
         });
-
+        
         wavesurfer.load('<?php echo htmlspecialchars($file['path']); ?>');
-
+        
         const playBtn = document.getElementById('playPause');
         const playIcon = document.getElementById('playIcon');
         const pauseIcon = document.getElementById('pauseIcon');
         const currentTime = document.getElementById('currentTime');
         const duration = document.getElementById('duration');
         const volumeSlider = document.getElementById('volume');
-
+        
         wavesurfer.on('ready', () => {
             duration.textContent = formatTime(wavesurfer.getDuration());
         });
-
-        wavesurfer.on('audioprocess', () => {
+        
+        wavesurfer.on('timeupdate', () => {
             currentTime.textContent = formatTime(wavesurfer.getCurrentTime());
         });
-
-        wavesurfer.on('seek', () => {
-            currentTime.textContent = formatTime(wavesurfer.getCurrentTime());
-        });
-
+        
         playBtn.addEventListener('click', () => {
             wavesurfer.playPause();
             const isPlaying = wavesurfer.isPlaying();
             playIcon.style.display = isPlaying ? 'none' : 'inline';
             pauseIcon.style.display = isPlaying ? 'inline' : 'none';
         });
-
+        
         volumeSlider.addEventListener('input', () => {
             wavesurfer.setVolume(volumeSlider.value);
         });
-
+        
         function formatTime(sec) {
             const m = Math.floor(sec / 60).toString().padStart(2, '0');
             const s = Math.floor(sec % 60).toString().padStart(2, '0');

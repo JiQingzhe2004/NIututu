@@ -2,6 +2,11 @@
 session_start();
 require 'check_login.php';
 require 'config.php';
+
+// 设置更新内容引导弹窗（关闭为 true，打开为 false）
+// define('IS_DEV', true); // 关闭更新内容引导弹窗
+define('IS_DEV', false); // 打开更新内容引导弹窗
+
 // 获取最新的首页公告内容
 $stmt = $pdo->query('SELECT index_content FROM announcements ORDER BY created_at DESC LIMIT 1');
 $indexAnnouncement = $stmt->fetchColumn();
@@ -857,6 +862,55 @@ $updateAnnouncement = $stmt->fetch(PDO::FETCH_ASSOC);
             </div>
         </div>
     </div>
+
+    <!-- 更新弹窗 -->
+    <style>
+    #update-toast {
+        display: none;
+        position: fixed;
+        right: 30px;
+        bottom: 30px;
+        z-index: 99999;
+        min-width: 260px;
+        max-width: 350px;
+        background: rgba(255,255,255,0.97);
+        color: #333;
+        border-radius: 10px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+        padding: 18px 24px 18px 18px;
+        font-size: 15px;
+        line-height: 1.7;
+        border-left: 6px solid #f093fb;
+        opacity: 0;
+        transform: translateY(40px) scale(0.95);
+        pointer-events: none;
+        transition: opacity 0.3s cubic-bezier(.4,2,.6,1), transform 0.3s cubic-bezier(.4,2,.6,1);
+    }
+    #update-toast.toast-show {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        pointer-events: auto;
+    }
+    #update-toast.toast-hide {
+        opacity: 0;
+        transform: translateY(40px) scale(0.95);
+        pointer-events: none;
+    }
+    body.dark-theme #update-toast {
+        background: rgba(34, 34, 34, 0.97) !important;
+        color: #eee !important;
+        border-left: 6px solid #f093fb !important;
+    }
+    </style>
+    <div id="update-toast">
+        <div style="font-weight:bold;margin-bottom:6px;">系统更新提示</div>
+        <div id="update-toast-content"></div>
+        <button id="update-toast-close" style="
+            position:absolute;top:8px;right:12px;
+            background:none;border:none;font-size:20px;line-height:1;cursor:pointer;color:#888;
+        " title="关闭">&times;</button>
+    </div>
+
     <!-- 引入脚本 -->
     <script>
         // 音频播放相关变量
@@ -1832,6 +1886,97 @@ $updateAnnouncement = $stmt->fetch(PDO::FETCH_ASSOC);
         }
     });
     </script>
+    <script>
+    <?php if (!defined('IS_DEV') || !IS_DEV): ?>
+    //localStorage.removeItem('update-toast-version'); // 测试环境下每次刷新都弹出
+    // 仅生产环境下启用弹窗
+    const APP_VERSION = <?php echo json_encode($app_version); ?>;
+    const key = 'update-toast-version';
+    const lastVersion = localStorage.getItem(key);
+
+    document.addEventListener('DOMContentLoaded', function() {
+        if (lastVersion !== APP_VERSION) {
+            const toast = document.getElementById('update-toast');
+            const content = document.getElementById('update-toast-content');
+            const closeBtn = document.getElementById('update-toast-close');
+            content.innerHTML = `
+                版本已更新为 <b>V${APP_VERSION}</b>
+                <span id="view-update-log" style="
+                    display: inline-block;
+                    color: #fff;
+                    background: linear-gradient(90deg,#f093fb,#f5576c);
+                    border-radius: 16px;
+                    padding: 3px 16px;
+                    margin-left: 8px;
+                    cursor: pointer;
+                    font-weight: 500;
+                    box-shadow: 0 2px 8px rgba(240,147,251,0.12);
+                    transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
+                    text-decoration: none;
+                "
+                onmouseover="this.style.background='linear-gradient(90deg,#f5576c,#f093fb)';this.style.transform='scale(1.06)';"
+                onmouseout="this.style.background='linear-gradient(90deg,#f093fb,#f5576c)';this.style.transform='scale(1)';"
+                >点击查看更新</span>
+                <div style="margin-top:12px;">
+                    <div id="update-toast-progress" style="
+                        width:100%;height:6px;background:#eee;border-radius:3px;overflow:hidden;">
+                        <div id="update-toast-bar" style="
+                            width:100%;height:100%;background:linear-gradient(90deg,#f093fb,#f5576c);transition:width 0.2s;"></div>
+                    </div>
+                </div>
+            `;
+            toast.style.display = 'block';
+            setTimeout(() => toast.classList.add('toast-show'), 10);
+
+            // 点击“点击查看更新”跳转
+            document.getElementById('view-update-log').onclick = function() {
+                localStorage.setItem(key, APP_VERSION);
+                toast.classList.remove('toast-show');
+                toast.classList.add('toast-hide');
+                setTimeout(() => {
+                    toast.style.display = 'none';
+                    toast.classList.remove('toast-hide');
+                    window.location.href = 'version_log';
+                }, 300);
+            };
+
+            // 关闭按钮
+            closeBtn.onclick = function() {
+                toast.classList.remove('toast-show');
+                toast.classList.add('toast-hide');
+                localStorage.setItem(key, APP_VERSION);
+                clearInterval(interval);
+                setTimeout(() => {
+                    toast.style.display = 'none';
+                    toast.classList.remove('toast-hide');
+                }, 300);
+            };
+
+            // 5秒进度条倒计时并同步关闭弹窗
+            const bar = document.getElementById('update-toast-bar');
+            let progress = 100;
+            const interval = setInterval(() => {
+                progress -= 1; // 每步1%，100步
+                if (progress <= 0) {
+                    progress = 0;
+                    bar.style.width = progress + '%';
+                    clearInterval(interval);
+                    toast.classList.remove('toast-show');
+                    toast.classList.add('toast-hide');
+                    localStorage.setItem(key, APP_VERSION);
+                    setTimeout(() => {
+                        toast.style.display = 'none';
+                        toast.classList.remove('toast-hide');
+                    }, 300);
+                } else {
+                    bar.style.width = progress + '%';
+                }
+            }, 50);
+        }
+    });
+    <?php endif; ?>
+    </script>
+
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         function setThemeBasedOnTime() {

@@ -8,39 +8,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $results = [];
 
     if ($keyword !== '') {
-        // 判断用户身份
         $userId = $_SESSION['user']['id'] ?? 0;
         $isAdmin = ($_SESSION['user']['role'] ?? '') === 'admin';
 
-        // 管理员可见全部，普通用户只能看到公开或自己上传的文件
         if ($isAdmin) {
-            $stmt = $pdo->prepare("
-                SELECT f.id, f.original_name, f.type, f.size, u.username
-                FROM files f
-                LEFT JOIN users u ON f.user_id = u.id
-                WHERE SUBSTRING_INDEX(f.original_name, '.', 1) LIKE :kw
-                ORDER BY f.upload_time DESC
-                LIMIT 30
-            ");
+            $sql = "SELECT f.id, f.original_name, f.size, f.type, f.user_id, f.upload_time, f.access, u.username
+                    FROM files f
+                    LEFT JOIN users u ON f.user_id = u.id
+                    WHERE f.original_name LIKE :kw
+                    ORDER BY f.upload_time DESC
+                    LIMIT 30";
+            $stmt = $pdo->prepare($sql);
             $stmt->execute([':kw' => '%' . $keyword . '%']);
         } else {
-            $stmt = $pdo->prepare("
-                SELECT f.id, f.original_name, f.type, f.size, u.username
-                FROM files f
-                LEFT JOIN users u ON f.user_id = u.id
-                WHERE 
-                    (f.is_private = 0 OR f.user_id = :uid)
-                    AND SUBSTRING_INDEX(f.original_name, '.', 1) LIKE :kw
-                ORDER BY f.upload_time DESC
-                LIMIT 30
-            ");
+            $sql = "SELECT f.id, f.original_name, f.size, f.type, f.user_id, f.upload_time, f.access, u.username
+                    FROM files f
+                    LEFT JOIN users u ON f.user_id = u.id
+                    WHERE (f.access = 'public' OR f.user_id = :uid)
+                    AND f.original_name LIKE :kw
+                    ORDER BY f.upload_time DESC
+                    LIMIT 30";
+            $stmt = $pdo->prepare($sql);
             $stmt->execute([
-                ':kw' => '%' . $keyword . '%',
-                ':uid' => $userId
+                ':uid' => $userId,
+                ':kw' => '%' . $keyword . '%'
             ]);
         }
+
         $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
     // 去掉search-result-box外层
     if ($keyword === '') {
         echo '<div class="search-hint search-hint-init text-center py-4">请输入关键词进行搜索</div>';

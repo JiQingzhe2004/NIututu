@@ -12,7 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $isAdmin = ($_SESSION['user']['role'] ?? '') === 'admin';
 
         if ($isAdmin) {
-            $sql = "SELECT f.id, f.original_name, f.size, f.type, f.user_id, f.upload_time, f.access, u.username
+            $sql = "SELECT f.id, f.original_name, f.size, f.type, f.user_id, f.upload_time, f.access, u.name
                     FROM files f
                     LEFT JOIN users u ON f.user_id = u.id
                     WHERE f.original_name LIKE :kw
@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $pdo->prepare($sql);
             $stmt->execute([':kw' => '%' . $keyword . '%']);
         } else {
-            $sql = "SELECT f.id, f.original_name, f.size, f.type, f.user_id, f.upload_time, f.access, u.username
+            $sql = "SELECT f.id, f.original_name, f.size, f.type, f.user_id, f.upload_time, f.access, u.name
                     FROM files f
                     LEFT JOIN users u ON f.user_id = u.id
                     WHERE (f.access = 'public' OR f.user_id = :uid)
@@ -65,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <td><span class="badge bg-secondary"><?= htmlspecialchars($file['original_name']) ?></span></td>
                     <td><?= htmlspecialchars($file['type']) ?></td>
                     <td><?= number_format($file['size'] / 1024, 2) ?> KB</td>
-                    <td><span class="badge bg-secondary"><?= htmlspecialchars($file['username'] ?? '未知') ?></span></td>
+                    <td><span class="badge bg-secondary"><?= htmlspecialchars($file['name'] ?? '未知') ?></span></td>
                     <td>
                         <button class="btn btn-info btn-sm rounded-pill px-3" onclick="viewFile(<?= $file['id'] ?>)">查看</button>
                         <button class="btn btn-success btn-sm rounded-pill px-3" onclick="downloadFile(<?= $file['id'] ?>, '<?= htmlspecialchars($file['original_name'], ENT_QUOTES) ?>')">下载</button>
@@ -76,7 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <div class="search-mobile-card d-flex flex-column small text-muted">
                             <div><strong>文件名：</strong> <span class="badge bg-secondary"><?= htmlspecialchars($file['original_name']) ?></span></div>
                             <div><strong>类型：</strong> <?= htmlspecialchars($file['type']) ?> ｜ <strong>大小：</strong> <?= number_format($file['size'] / 1024, 2) ?> KB</div>
-                            <div><strong>上传人：</strong> <span class="badge bg-secondary"><?= htmlspecialchars($file['username'] ?? '未知') ?></span></div>
+                            <div><strong>上传人：</strong> <span class="badge bg-secondary"><?= htmlspecialchars($file['name'] ?? '未知') ?></span></div>
                             <div class="mt-2">
                                 <button class="btn btn-info btn-sm rounded-pill px-3 me-2" onclick="viewFile(<?= $file['id'] ?>)">查看</button>
                                 <button class="btn btn-success btn-sm rounded-pill px-3" onclick="downloadFile(<?= $file['id'] ?>, '<?= htmlspecialchars($file['original_name'], ENT_QUOTES) ?>')">下载</button>

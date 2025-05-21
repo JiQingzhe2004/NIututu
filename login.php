@@ -2,7 +2,7 @@
 // 设置时区为上海
 date_default_timezone_set('Asia/Shanghai');
 
-// 统一设置“记住我”天数
+// 统一设置"记住我"天数
 $remember_days = 30;
 $remember_seconds = $remember_days * 24 * 60 * 60;
 
@@ -31,20 +31,55 @@ require 'config.php'; // 包含数据库连接配置
 $stmt = $pdo->query('SELECT login_content FROM announcements ORDER BY created_at DESC LIMIT 1');
 $loginAnnouncement = $stmt->fetchColumn();
 
-// 自动登录（记住我功能）
+// 自动登录（多设备支持版记住我功能）
 if (!isset($_SESSION['user']) && isset($_COOKIE['remember_token'])) {
-    $stmt = $pdo->prepare('SELECT * FROM users WHERE remember_token = ? LIMIT 1');
+    $current_agent = $_SERVER['HTTP_USER_AGENT'] ?? '';
+    $current_ip = $_SERVER['REMOTE_ADDR'] ?? '';
+    
+    // 查询token有效性（包含用户信息和token信息）
+    $stmt = $pdo->prepare('
+        SELECT u.*, t.token, t.expires_at, t.device_info 
+        FROM users u
+        JOIN remember_tokens t ON u.id = t.user_id
+        WHERE t.token = ? AND t.expires_at > NOW()
+        LIMIT 1
+    ');
     $stmt->execute([$_COOKIE['remember_token']]);
-    $user = $stmt->fetch();
-    if ($user) {
+    $result = $stmt->fetch();
+    
+    if ($result) {
+        // 验证通过，创建会话
         $_SESSION['user'] = [
-            'id' => $user['id'],
-            'username' => $user['username'],
-            'name' => $user['name'],
-            'role' => $user['role']
+            'id' => $result['id'],
+            'username' => $result['username'],
+            'name' => $result['name'],
+            'role' => $result['role']
         ];
-        // 刷新 token 有效期
-        setcookie('remember_token', $_COOKIE['remember_token'], time() + $remember_seconds, '/', '', isset($_SERVER['HTTPS']), true);
+        
+        // 更新token最后使用时间
+        $stmt = $pdo->prepare('UPDATE remember_tokens SET last_used = NOW() WHERE token = ?');
+        $stmt->execute([$_COOKIE['remember_token']]);
+        
+        // 10%的几率更换token
+        if (rand(1, 10) === 1) {
+            $new_token = bin2hex(random_bytes(32));
+            $new_expires = date('Y-m-d H:i:s', time() + $remember_seconds);
+            
+            $stmt = $pdo->prepare('
+                UPDATE remember_tokens 
+                SET token = ?, expires_at = ?, device_info = ?
+                WHERE token = ?
+            ');
+            $stmt->execute([
+                $new_token, 
+                $new_expires,
+                json_encode(['agent' => $current_agent, 'ip' => $current_ip]),
+                $_COOKIE['remember_token']
+            ]);
+            
+            setcookie('remember_token', $new_token, time() + $remember_seconds, '/', '', isset($_SERVER['HTTPS']), true);
+        }
+        
         header('Location: index');
         exit();
     }
@@ -72,14 +107,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // 记住我功能
         if (!empty($_POST['remember'])) {
             $token = bin2hex(random_bytes(32));
+            $token_expires = date('Y-m-d H:i:s', time() + $remember_seconds);
+            $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? '';
+            $ip_address = $_SERVER['REMOTE_ADDR'] ?? '';
+            
+            // 为当前设备创建新token记录
+            $stmt = $pdo->prepare('
+                INSERT INTO remember_tokens 
+                (user_id, token, expires_at, device_info, created_at, last_used)
+                VALUES (?, ?, ?, ?, NOW(), NOW())
+            ');
+            $stmt->execute([
+                $user['id'],
+                $token,
+                $token_expires,
+                json_encode([
+                    'agent' => $user_agent,
+                    'ip' => $ip_address,
+                    'device' => $_POST['device_name'] ?? '未知设备'
+                ])
+            ]);
+            
+            // 设置cookie
             setcookie('remember_token', $token, time() + $remember_seconds, '/', '', isset($_SERVER['HTTPS']), true);
-            $stmt = $pdo->prepare('UPDATE users SET remember_token = ? WHERE id = ?');
-            $stmt->execute([$token, $user['id']]);
-        } else {
-            // 未勾选记住我，清除token
-            setcookie('remember_token', '', time() - 3600, '/', '', isset($_SERVER['HTTPS']), true);
-            $stmt = $pdo->prepare('UPDATE users SET remember_token = NULL WHERE id = ?');
-            $stmt->execute([$user['id']]);
         }
 
         // 跳转到文件管理页面
@@ -237,6 +287,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <?php if (!empty($_POST['remember'])) echo 'checked'; ?>>
                         <label class="form-check-label" for="remember">记住我（<?php echo $remember_days; ?>天免登录）</label>
                     </div>
+                    <div id="deviceNameContainer" class="mb-3" style="display: none;">
+                        <label for="device_name" class="form-label">设备名称（可选）</label>
+                        <input type="text" class="form-control" id="device_name" name="device_name" placeholder="例如：我的手机">
+                    </div>
                     <button type="submit" class="btn btn-primary">登录</button>
                 </form>
             </div>
@@ -261,6 +315,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <!-- 引入脚本 -->
     <script>
+        // 当记住我复选框状态变化时显示/隐藏设备名称输入框
+        document.getElementById('remember').addEventListener('change', function() {
+            document.getElementById('deviceNameContainer').style.display = this.checked ? 'block' : 'none';
+        });
+
         function setThemeBasedOnTime() {
             const hour = new Date().getHours();
             const body = document.body;

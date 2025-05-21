@@ -5,6 +5,21 @@
 
 ---
 
+## 🎉 V 4.0.3
+
+- 优化登录功能
+
+```sql
+ALTER TABLE `users` 
+ADD COLUMN `token_expires` datetime DEFAULT NULL AFTER `remember_token`,
+ADD COLUMN `user_agent` varchar(255) DEFAULT NULL AFTER `token_expires`,
+ADD COLUMN `ip_address` varchar(45) DEFAULT NULL AFTER `user_agent`;
+```
+
+之前版本需要向users表新增字段
+
+并创建新的`remember_tokens`表。
+
 ## 🏎️ V 4.0.1
 
 **主要更新**

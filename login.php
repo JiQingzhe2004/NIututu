@@ -1,4 +1,6 @@
 <?php
+// login.php
+
 // 设置时区为上海
 date_default_timezone_set('Asia/Shanghai');
 
@@ -9,7 +11,7 @@ $remember_seconds = $remember_days * 24 * 60 * 60;
 // 定义会话生命周期为1个月
 $cookie_lifetime = $remember_seconds;
 
-// 设置会话Cookie参数
+// 设置会话Cookie参数（与config.php中的设置保持一致）
 session_set_cookie_params([
     'lifetime' => $cookie_lifetime,
     'path' => '/',
@@ -22,10 +24,47 @@ session_set_cookie_params([
 // 设置服务器端会话数据的生命周期
 ini_set('session.gc_maxlifetime', $cookie_lifetime);
 
-// 启动会话
-session_start();
+// 启动会话（与config.php中的设置保持一致）
+session_start([
+    'cookie_lifetime' => $cookie_lifetime,
+    'cookie_secure' => isset($_SERVER['HTTPS']),
+    'cookie_httponly' => true,
+    'use_strict_mode' => true,
+    'use_only_cookies' => true,
+    'sid_length' => 48,
+    'sid_bits_per_character' => 6
+]);
 
 require 'config.php'; // 包含数据库连接配置
+
+// 创建审计日志函数
+function logAction($pdo, $userId, $action, $details = null) {
+    $ip = $_SERVER['REMOTE_ADDR'] ?? '';
+    $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
+    
+    $stmt = $pdo->prepare('
+        INSERT INTO audit_logs 
+        (user_id, action, details, ip_address, user_agent) 
+        VALUES (?, ?, ?, ?, ?)
+    ');
+    $stmt->execute([
+        $userId,
+        $action,
+        $details ? json_encode($details, JSON_UNESCAPED_UNICODE) : null,
+        $ip,
+        $userAgent
+    ]);
+}
+
+// 获取设备指纹
+function getDeviceFingerprint() {
+    $agent = $_SERVER['HTTP_USER_AGENT'] ?? '';
+    $ip = $_SERVER['REMOTE_ADDR'] ?? '';
+    $accept = $_SERVER['HTTP_ACCEPT'] ?? '';
+    $language = $_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '';
+    
+    return md5($agent . $ip . $accept . $language);
+}
 
 // 获取最新的登录页面公告内容
 $stmt = $pdo->query('SELECT login_content FROM announcements ORDER BY created_at DESC LIMIT 1');
@@ -35,16 +74,19 @@ $loginAnnouncement = $stmt->fetchColumn();
 if (!isset($_SESSION['user']) && isset($_COOKIE['remember_token'])) {
     $current_agent = $_SERVER['HTTP_USER_AGENT'] ?? '';
     $current_ip = $_SERVER['REMOTE_ADDR'] ?? '';
+    $device_fingerprint = getDeviceFingerprint();
     
-    // 查询token有效性（包含用户信息和token信息）
+    // 查询token有效性（包含设备验证）
     $stmt = $pdo->prepare('
         SELECT u.*, t.token, t.expires_at, t.device_info 
         FROM users u
         JOIN remember_tokens t ON u.id = t.user_id
-        WHERE t.token = ? AND t.expires_at > NOW()
+        WHERE t.token = ? 
+        AND t.expires_at > NOW()
+        AND JSON_EXTRACT(t.device_info, "$.fingerprint") = ?
         LIMIT 1
     ');
-    $stmt->execute([$_COOKIE['remember_token']]);
+    $stmt->execute([$_COOKIE['remember_token'], $device_fingerprint]);
     $result = $stmt->fetch();
     
     if ($result) {
@@ -53,35 +95,75 @@ if (!isset($_SESSION['user']) && isset($_COOKIE['remember_token'])) {
             'id' => $result['id'],
             'username' => $result['username'],
             'name' => $result['name'],
-            'role' => $result['role']
+            'role' => $result['role'],
+            'current_device_fingerprint' => $device_fingerprint
         ];
+
+        // 记录自动登录审计日志
+        logAction($pdo, $result['id'], 'auto_login', [
+            'username' => $result['username'],
+            'token' => substr($_COOKIE['remember_token'], 0, 8).'...',
+            'device' => json_decode($result['device_info'], true)
+        ]);
         
-        // 更新token最后使用时间
-        $stmt = $pdo->prepare('UPDATE remember_tokens SET last_used = NOW() WHERE token = ?');
-        $stmt->execute([$_COOKIE['remember_token']]);
+        // 更新token最后使用时间和设备信息
+        $stmt = $pdo->prepare('
+            UPDATE remember_tokens 
+            SET last_used = NOW(),
+                device_info = JSON_SET(
+                    device_info,
+                    "$.last_ip", ?,
+                    "$.last_agent", ?
+                )
+            WHERE token = ?
+        ');
+        $stmt->execute([$current_ip, $current_agent, $_COOKIE['remember_token']]);
         
-        // 10%的几率更换token
+        // 10%的几率更换token（增强安全性）
         if (rand(1, 10) === 1) {
             $new_token = bin2hex(random_bytes(32));
             $new_expires = date('Y-m-d H:i:s', time() + $remember_seconds);
             
             $stmt = $pdo->prepare('
                 UPDATE remember_tokens 
-                SET token = ?, expires_at = ?, device_info = ?
+                SET token = ?, 
+                    expires_at = ?, 
+                    device_info = JSON_SET(
+                        device_info,
+                        "$.fingerprint", ?,
+                        "$.last_update", NOW()
+                    )
                 WHERE token = ?
             ');
             $stmt->execute([
                 $new_token, 
                 $new_expires,
-                json_encode(['agent' => $current_agent, 'ip' => $current_ip]),
+                $device_fingerprint,
                 $_COOKIE['remember_token']
             ]);
             
-            setcookie('remember_token', $new_token, time() + $remember_seconds, '/', '', isset($_SERVER['HTTPS']), true);
+            setcookie('remember_token', $new_token, [
+                'expires' => time() + $remember_seconds,
+                'path' => '/',
+                'domain' => '',
+                'secure' => isset($_SERVER['HTTPS']),
+                'httponly' => true,
+                'samesite' => 'Lax'
+            ]);
         }
         
         header('Location: index');
         exit();
+    } else {
+        // 无效token则清除cookie
+        setcookie('remember_token', '', [
+            'expires' => time() - 3600,
+            'path' => '/',
+            'domain' => '',
+            'secure' => isset($_SERVER['HTTPS']),
+            'httponly' => true,
+            'samesite' => 'Lax'
+        ]);
     }
 }
 
@@ -96,20 +178,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user = $stmt->fetch();
 
     if ($user && password_verify($password, $user['password'])) {
-        // 登录成功，将用户信息存储到会话中
+        // 获取设备信息
+        $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? '';
+        $ip_address = $_SERVER['REMOTE_ADDR'] ?? '';
+        $device_fingerprint = getDeviceFingerprint();
+        
+        // 登录成功，创建会话
         $_SESSION['user'] = [
             'id' => $user['id'],
             'username' => $user['username'],
             'name' => $user['name'],
-            'role' => $user['role']
+            'role' => $user['role'],
+            'current_device_fingerprint' => $device_fingerprint
         ];
+
+        // 记录登录审计日志
+        logAction($pdo, $user['id'], 'login', [
+            'username' => $user['username'],
+            'remember_me' => !empty($_POST['remember']),
+            'device' => [
+                'ip' => $ip_address,
+                'agent' => substr($user_agent, 0, 100),
+                'fingerprint' => $device_fingerprint
+            ]
+        ]);
 
         // 记住我功能
         if (!empty($_POST['remember'])) {
             $token = bin2hex(random_bytes(32));
             $token_expires = date('Y-m-d H:i:s', time() + $remember_seconds);
-            $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? '';
-            $ip_address = $_SERVER['REMOTE_ADDR'] ?? '';
+            
+            // 设备详细信息
+            $device_info = [
+                'agent' => $user_agent,
+                'ip' => $ip_address,
+                'device' => $_POST['device_name'] ?? '未知设备',
+                'fingerprint' => $device_fingerprint,
+                'first_login' => date('Y-m-d H:i:s')
+            ];
             
             // 为当前设备创建新token记录
             $stmt = $pdo->prepare('
@@ -121,22 +227,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $user['id'],
                 $token,
                 $token_expires,
-                json_encode([
-                    'agent' => $user_agent,
-                    'ip' => $ip_address,
-                    'device' => $_POST['device_name'] ?? '未知设备'
-                ])
+                json_encode($device_info, JSON_UNESCAPED_UNICODE)
             ]);
             
             // 设置cookie
-            setcookie('remember_token', $token, time() + $remember_seconds, '/', '', isset($_SERVER['HTTPS']), true);
+            setcookie('remember_token', $token, [
+                'expires' => time() + $remember_seconds,
+                'path' => '/',
+                'domain' => '',
+                'secure' => isset($_SERVER['HTTPS']),
+                'httponly' => true,
+                'samesite' => 'Lax'
+            ]);
         }
 
-        // 跳转到文件管理页面
         header('Location: index');
         exit();
     } else {
         $error = '用户名或密码错误';
+        // 记录失败的登录尝试
+        logAction($pdo, 0, 'login_failed', [
+            'username' => $username,
+            'ip' => $_SERVER['REMOTE_ADDR'] ?? ''
+        ]);
     }
 }
 ?>

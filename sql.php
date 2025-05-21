@@ -7,9 +7,8 @@ date_default_timezone_set('Asia/Shanghai');
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action'])) {
     if ($_GET['action'] === 'get_log') {
-        $logFile = 'execution.log';
+        $logFile = __DIR__ . 'execution.log';
         if (file_exists($logFile)) {
-            // 只返回纯文本内容，不加 nl2br，前端用 innerText 显示更自然
             echo file_get_contents($logFile);
         } else {
             echo "日志文件不存在。";
@@ -17,14 +16,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action'])) {
         exit;
     } elseif ($_GET['action'] === 'init_db') {
         try {
-            $sql = file_get_contents('up.SQL');
-            if ($sql !== false && trim($sql) !== '') {
-                $pdo->exec($sql);
-                echo json_encode(['success' => true]);
-            } else {
-                echo json_encode(['success' => false, 'error' => 'SQL文件为空']);
+            $sqlFile = __DIR__ . 'up.SQL';
+            if (!file_exists($sqlFile)) {
+                throw new Exception('SQL文件不存在');
             }
-        } catch (PDOException $e) {
+            
+            $sql = file_get_contents($sqlFile);
+            if ($sql === false || trim($sql) === '') {
+                throw new Exception('SQL文件为空或读取失败');
+            }
+            
+            $pdo->exec($sql);
+            echo json_encode(['success' => true]);
+        } catch (Exception $e) {
             echo json_encode(['success' => false, 'error' => $e->getMessage()]);
         }
         exit;
@@ -32,16 +36,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action'])) {
     exit;
 }
 
+// 定义要检查的所有表
+$tables = ['announcements', 'files', 'Messages', 'users', 'remember_tokens', 'audit_logs'];
+$tableStatus = [];
+$hasError = false;
+$allMissing = true;
+
 try {
     // 添加2秒延迟
     sleep(2);
     
-    // 检查四个表是否已存在
-    $tables = ['announcements', 'files', 'Messages', 'users'];
-    $tableStatus = [];
-    $hasError = false;
-    $allMissing = true;  // 检查是否所有表都不存在
-
     // 检测日志
     $detectLog = date('Y-m-d H:i:s') . " - 正在检测表状态: ";
     $detectLogArr = [];
@@ -53,7 +57,7 @@ try {
             $tableStatus[$table] = $exists;
             $detectLogArr[] = "{$table}:" . ($exists ? "存在" : "不存在");
             if ($exists) {
-                $allMissing = false;  // 只要有一个表存在，就不是全部缺失
+                $allMissing = false;
             }
         } catch (PDOException $e) {
             $tableStatus[$table] = false;
@@ -65,14 +69,12 @@ try {
     $detectLog .= implode(', ', $detectLogArr) . "\n";
     file_put_contents('execution.log', $detectLog, FILE_APPEND);
 
-    // 只有全部表都存在才记录“数据库已初始化”，不再自动执行 up.SQL
     if (!$hasError) {
         $allExist = !in_array(false, $tableStatus, true);
         if ($allExist) {
             $msg = date('Y-m-d H:i:s') . " - 数据库已初始化。\n";
             file_put_contents('execution.log', $msg, FILE_APPEND);
         }
-        // 不再自动执行 up.SQL
     }
 
 } catch (PDOException $e) {
@@ -81,8 +83,6 @@ try {
     $hasError = true;
     $tableStatus = array_fill_keys($tables, false);
 }
-
-// 确保即使发生错误也会显示页面
 ?>
 
 <!DOCTYPE html>
@@ -99,222 +99,40 @@ try {
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <title>SQL 执行记录</title>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            min-height: 100vh;
-            background: #f5f7fa;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            color: #1a202c;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1000px;
-            margin: 40px auto;
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
-            padding: 32px;
-        }
-
-        h1 {
-            font-size: 24px;
-            font-weight: 600;
-            color: #2d3748;
-            margin-bottom: 24px;
-            padding-bottom: 16px;
-            border-bottom: 1px solid #e2e8f0;
-        }
-
-        .table-status {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 24px;
-            font-size: 14px;
-        }
-
-        .table-status th {
-            background: #f8fafc;
-            padding: 12px 16px;
-            text-align: left;
-            font-weight: 600;
-            color: #4a5568;
-            border-bottom: 2px solid #e2e8f0;
-        }
-
-        .table-status td {
-            padding: 12px 16px;
-            border-bottom: 1px solid #e2e8f0;
-        }
-
-        .table-status tr:hover {
-            background: #f8fafc;
-        }
-
-        .ok {
-            color: #047857;
-            display: inline-flex;
-            align-items: center;
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        .ok:before {
-            content: "●";
-            margin-right: 6px;
-        }
-
-        .fail {
-            color: #dc2626;
-            display: inline-flex;
-            align-items: center;
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        .fail:before {
-            content: "●";
-            margin-right: 6px;
-        }
-
-        #log {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            padding: 16px;
-            height: 300px;
-            overflow-y: auto;
-            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-            font-size: 13px;
-            line-height: 1.6;
-            color: #4a5568;
-        }
-
-        #log::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-
-        #log::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
-
-        #log::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 3px;
-        }
-
-        #log::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
-
-        @keyframes pulse {
-            0% { opacity: 0.4; }
-            50% { opacity: 0.8; }
-            100% { opacity: 0.4; }
-        }
-
-        @keyframes spin {
-            0% { transform: translate(-50%, -50%) rotate(0deg);}
-            100% { transform: translate(-50%, -50%) rotate(360deg);}
-        }
-
-        @keyframes skeleton {
-            0% { background-color: #e2e8f0; }
-            50% { background-color: #f1f5f9; }
-            100% { background-color: #e2e8f0; }
-        }
-
-        .skeleton {
-            animation: skeleton 1.2s infinite ease-in-out;
-            border-radius: 4px;
-            background-color: #e2e8f0;
-        }
-
-        .skeleton-row td {
-            height: 40px;
-            padding: 0 16px;
-        }
-
-        .skeleton-block {
-            display: inline-block;
-            height: 18px;
-            width: 100px;
-            margin: 0 auto;
-        }
-
-        .skeleton-log {
-            width: 100%;
-            height: 18px;
-            margin-bottom: 8px;
-        }
-
-        .loading {
-            z-index: 1;
-            background: #e2e8f0;
-            color: transparent !important; /* 强制隐藏文字 */
-            animation: pulse 1.5s infinite;
-            border-radius: 4px;
-            user-select: none;
-            min-height: 18px; /* 保证有高度 */
-            position: relative;
-        }
-
-        .loading::after {
-            content: '';
-            display: inline-block;
-            width: 18px;
-            height: 18px;
-            border: 3px solid #cbd5e1;
-            border-top: 3px solid #3b82f6;
-            border-radius: 50%;
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            animation: spin 1s linear infinite;
-        }
-
-        .init-btn {
-            display: inline-block;
-            padding: 12px 24px;
-            background: #3b82f6;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background 0.2s;
-            margin: 20px 0;
-        }
-        
-        .init-btn:hover {
-            background: #2563eb;
-        }
-        
-        .init-btn:disabled {
-            background: #94a3b8;
-            cursor: not-allowed;
-        }
-        
-        .text-center {
-            text-align: center;
-        }
-
+        /* 保持原有样式不变 */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { min-height: 100vh; background: #f5f7fa; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #1a202c; padding: 20px; }
+        .container { max-width: 1000px; margin: 40px auto; background: #fff; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.12); padding: 32px; }
+        h1 { font-size: 24px; font-weight: 600; color: #2d3748; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid #e2e8f0; }
+        .table-status { width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 14px; }
+        .table-status th { background: #f8fafc; padding: 12px 16px; text-align: left; font-weight: 600; color: #4a5568; border-bottom: 2px solid #e2e8f0; }
+        .table-status td { padding: 12px 16px; border-bottom: 1px solid #e2e8f0; }
+        .table-status tr:hover { background: #f8fafc; }
+        .ok { color: #047857; display: inline-flex; align-items: center; font-size: 14px; font-weight: 500; }
+        .ok:before { content: "●"; margin-right: 6px; }
+        .fail { color: #dc2626; display: inline-flex; align-items: center; font-size: 14px; font-weight: 500; }
+        .fail:before { content: "●"; margin-right: 6px; }
+        #log { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 16px; height: 300px; overflow-y: auto; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 13px; line-height: 1.6; color: #4a5568; }
+        #log::-webkit-scrollbar { width: 6px; height: 6px; }
+        #log::-webkit-scrollbar-track { background: #f1f5f9; }
+        #log::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        #log::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        @keyframes pulse { 0% { opacity: 0.4; } 50% { opacity: 0.8; } 100% { opacity: 0.4; } }
+        @keyframes spin { 0% { transform: translate(-50%, -50%) rotate(0deg);} 100% { transform: translate(-50%, -50%) rotate(360deg);} }
+        @keyframes skeleton { 0% { background-color: #e2e8f0; } 50% { background-color: #f1f5f9; } 100% { background-color: #e2e8f0; } }
+        .skeleton { animation: skeleton 1.2s infinite ease-in-out; border-radius: 4px; background-color: #e2e8f0; }
+        .skeleton-row td { height: 40px; padding: 0 16px; }
+        .skeleton-block { display: inline-block; height: 18px; width: 100px; margin: 0 auto; }
+        .skeleton-log { width: 100%; height: 18px; margin-bottom: 8px; }
+        .loading { z-index: 1; background: #e2e8f0; color: transparent !important; animation: pulse 1.5s infinite; border-radius: 4px; user-select: none; min-height: 18px; position: relative; }
+        .loading::after { content: ''; display: inline-block; width: 18px; height: 18px; border: 3px solid #cbd5e1; border-top: 3px solid #3b82f6; border-radius: 50%; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); animation: spin 1s linear infinite; }
+        .init-btn { display: inline-block; padding: 12px 24px; background: #3b82f6; color: white; border: none; border-radius: 6px; font-weight: 500; cursor: pointer; transition: background 0.2s; margin: 20px 0; }
+        .init-btn:hover { background: #2563eb; }
+        .init-btn:disabled { background: #94a3b8; cursor: not-allowed; }
+        .text-center { text-align: center; }
         @media (max-width: 768px) {
-            .container {
-                padding: 20px;
-                margin: 0;
-            }
-
-            h1 {
-                font-size: 20px;
-            }
+            .container { padding: 20px; margin: 0; }
+            h1 { font-size: 20px; }
         }
     </style>
 </head>
@@ -343,7 +161,7 @@ try {
     <script>
         // 骨架屏动画
         function showSkeleton() {
-            const tables = ['announcements', 'files', 'Messages', 'users'];
+            const tables = <?php echo json_encode($tables); ?>;
             let html = '';
             for (let t of tables) {
                 html += `<tr class="skeleton-row">
@@ -403,10 +221,10 @@ try {
         // 页面加载时先显示骨架屏2秒，再显示真实内容
         showSkeleton();
         setTimeout(() => {
-            document.getElementById('table-body').outerHTML =
+            document.getElementById('table-body').innerHTML = 
                 `<?php
                 ob_start();
-                foreach (['announcements', 'files', 'Messages', 'users'] as $table): ?>
+                foreach ($tables as $table): ?>
                 <tr>
                     <td><?php echo htmlspecialchars($table); ?></td>
                     <td>

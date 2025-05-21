@@ -135,7 +135,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         body.light-theme .login-container {
             margin-top: 40px;
-            background-color: #ffffff;
             color: #212529;
             padding: 20px;
             border-radius: 5px;

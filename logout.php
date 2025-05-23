@@ -85,6 +85,6 @@ if (isset($_SESSION['user'])) {
 session_destroy();
 
 // 重定向到登录页面
-header('Location: login.php');
+header('Location: login');
 exit();
 ?>
